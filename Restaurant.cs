@@ -39,6 +39,9 @@ public class Restaurant
     [JsonPropertyName("restaurant_type")]
     public string RestaurantType { get; set; } = string.Empty;
 
+    [JsonPropertyName("ville")]
+    public string Ville { get; set; } = string.Empty;
+
     [JsonPropertyName("food")]
     public string Food { get; set; } = string.Empty;
 

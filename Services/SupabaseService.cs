@@ -94,6 +94,9 @@ public class SupabaseService
                         if (el.TryGetProperty("restaurant_type", out var rtEl) && rtEl.ValueKind != JsonValueKind.Null)
                             resto.RestaurantType = ParseJsonStringOrArray(rtEl);
 
+                        if (el.TryGetProperty("ville", out var villeEl) && villeEl.ValueKind != JsonValueKind.Null)
+                            resto.Ville = villeEl.GetString() ?? string.Empty;
+
                         if (el.TryGetProperty("food", out var foodEl) && foodEl.ValueKind != JsonValueKind.Null)
                             resto.Food = ParseJsonStringOrArray(foodEl);
 
@@ -126,6 +129,7 @@ public class SupabaseService
                 est_fiable = restaurant.EstFiable,
                 lien_commande = string.IsNullOrWhiteSpace(restaurant.LienCommande) ? null : restaurant.LienCommande,
                 restaurant_type = string.IsNullOrWhiteSpace(restaurant.RestaurantType) ? null : new[] { restaurant.RestaurantType },
+                ville = string.IsNullOrWhiteSpace(restaurant.Ville) ? null : restaurant.Ville,
                 food = string.IsNullOrWhiteSpace(restaurant.Food) ? null : new[] { restaurant.Food }
             });
 
@@ -166,6 +170,7 @@ public class SupabaseService
                 est_fiable = restaurant.EstFiable,
                 lien_commande = string.IsNullOrWhiteSpace(restaurant.LienCommande) ? null : restaurant.LienCommande,
                 restaurant_type = string.IsNullOrWhiteSpace(restaurant.RestaurantType) ? null : new[] { restaurant.RestaurantType },
+                ville = string.IsNullOrWhiteSpace(restaurant.Ville) ? null : restaurant.Ville,
                 food = string.IsNullOrWhiteSpace(restaurant.Food) ? null : new[] { restaurant.Food }
             });
 

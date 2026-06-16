@@ -49,11 +49,14 @@
                     <input type="text" @bind="nouveauResto.RestaurantType" class="form-control form-control-sm" placeholder="Type Restaurant" />
                 </div>
                 <div class="col-md-3">
+                    <input type="text" @bind="nouveauResto.Ville" class="form-control form-control-sm" placeholder="Ville" />
+                </div>
+                <div class="col-md-3">
                     <input type="text" @bind="nouveauResto.Food" class="form-control form-control-sm" placeholder="Type Nourriture" />
                 </div>
-                <div class="col-md-6"></div>
+                <div class="col-md-3"></div>
                 <div class="col-12"></div>
-            </div>
+            </div
             <div class="row g-3">
                 @if (nouveauResto.Type == TypeRestaurant.Physique)
                 {
@@ -127,12 +130,18 @@
                     <label class="form-label fw-bold small text-warning">Type Restaurant</label>
                 </div>
                 <div class="col-md-2">
+                    <label class="form-label fw-bold small text-warning">Ville</label>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label fw-bold small text-warning">Type Nourriture</label>
                 </div>
             </div>
             <div class="row g-3">
                 <div class="col-md-2">
                     <input type="text" @bind="restoEnEdition.RestaurantType" class="form-control form-control-sm" placeholder="Type Restaurant" />
+                </div>
+                <div class="col-md-2">
+                    <input type="text" @bind="restoEnEdition.Ville" class="form-control form-control-sm" placeholder="Ville" />
                 </div>
                 <div class="col-md-2">
                     <input type="text" @bind="restoEnEdition.Food" class="form-control form-control-sm" placeholder="Type Nourriture" />
@@ -185,17 +194,17 @@
     <div class="card p-3 mb-5 border-secondary shadow-sm">
         <h5 class="card-title text-secondary"><i class="bi bi-funnel"></i> Filtrer les restaurants</h5>
         <div class="row g-3 mb-3">
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <input type="text" @bind="searchText" class="form-control form-control-sm" placeholder="Recherche texte..." />
             </div>
-            <div class="col-md-2">
+            <div class="col-12 col-md-2">
                 <select @bind="searchType" class="form-select form-select-sm">
                     <option value="">Tous types</option>
                     <option value="Physique">Physique</option>
                     <option value="EnLigne">En ligne</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-12 col-md-3">
                 <select @bind="searchRestaurantType" class="form-select form-select-sm">
                     <option value="">Tous types restaurant</option>
                     @foreach (var type in RestaurantTypeOptions)
@@ -204,19 +213,19 @@
                     }
                 </select>
             </div>
-            <div class="col-md-3">
-                <select @bind="searchFood" class="form-select form-select-sm">
-                    <option value="">Toutes nourritures</option>
-                    @foreach (var food in FoodOptions)
+            <div class="col-12 col-md-2">
+                <select @bind="searchVille" class="form-select form-select-sm">
+                    <option value="">Toutes villes</option>
+                    @foreach (var ville in VilleOptions)
                     {
-                        <option value="@food">@food</option>
+                        <option value="@ville">@ville</option>
                     }
                 </select>
             </div>
-            <div class="col-md-1 d-grid">
+            <div class="col-6 col-md-1 d-grid">
                 <button class="btn btn-outline-primary btn-sm" @onclick="ApplyFilter">Appliquer</button>
             </div>
-            <div class="col-md-1 d-grid">
+            <div class="col-6 col-md-1 d-grid">
                 <button class="btn btn-outline-secondary btn-sm" @onclick="ResetFilter">Réinitialiser</button>
             </div>
         </div>
@@ -232,14 +241,14 @@
                         <div class="card shadow-sm border-0 bg-light">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-2">
-                                    <h5 class="fw-bold">@resto.Nom</h5>
+                                    <h5 class="fw-bold">@resto.Nom <span class="badge bg-light text-primary ms-2 small">📍 @resto.Ville</span></h5>
                                     <span class="badge @(resto.EstFiable ? "bg-success" : "bg-danger")">
                                         @(resto.EstFiable ? "Fiable" : "Non Fiable")
                                     </span>
                                 </div>
-                                <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
-                                <p class="small mb-1">🏢 Type : @resto.RestaurantType | 🍴 Nourriture : @resto.Food</p>
-                                <p class="small mb-2">📞 Tél : <a href="tel:@resto.Telephone">@resto.Telephone</a></p>
+                                          <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
+                                        <p class="small mb-1">📍 <strong>@resto.Ville</strong> | 🏢 Type : @resto.RestaurantType</p>
+                                          <p class="small mb-2">📞 Tél : <a href="tel:@resto.Telephone">@resto.Telephone</a></p>
                                 @if (!string.IsNullOrWhiteSpace(resto.LienCommande))
                                 {
                                     <a href="@resto.LienCommande" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-2">
@@ -270,13 +279,13 @@
                         <div class="card shadow-sm border-0 bg-light">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between mb-2">
-                                    <h5 class="fw-bold">@resto.Nom</h5>
+                                    <h5 class="fw-bold">@resto.Nom <span class="badge bg-light text-primary ms-2 small">📍 @resto.Ville</span></h5>
                                     <span class="badge @(resto.EstFiable ? "bg-success" : "bg-danger")">
                                         @(resto.EstFiable ? "Fiable" : "Non Fiable")
                                     </span>
                                 </div>
                                 <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
-                                <p class="small mb-1">🏢 Type : @resto.RestaurantType | 🍴 Nourriture : @resto.Food</p>
+                                    <p class="small mb-1">📍 <strong>@resto.Ville</strong> | 🏢 Type : @resto.RestaurantType</p>
                                 @if (!string.IsNullOrEmpty(resto.LienCommande))
                                 {
                                     <a href="@resto.LienCommande" target="_blank" class="btn btn-warning btn-sm w-100 mb-2 text-dark fw-bold">
@@ -304,9 +313,9 @@
     private string searchText = string.Empty;
     private string searchType = string.Empty;
     private string searchRestaurantType = string.Empty;
-    private string searchFood = string.Empty;
+    private string searchVille = string.Empty;
     private List<string> RestaurantTypeOptions = new();
-    private List<string> FoodOptions = new();
+    private List<string> VilleOptions = new();
     private string urlGoogleMaps = string.Empty;
     private string messageErreur = string.Empty;
     private Restaurant nouveauResto = new();
@@ -331,8 +340,8 @@
                 .OrderBy(value => value)
                 .ToList();
 
-            FoodOptions = ListeRestaurants
-                .Select(r => r.Food)
+            VilleOptions = ListeRestaurants
+                .Select(r => r.Ville)
                 .Where(value => !string.IsNullOrWhiteSpace(value))
                 .Distinct()
                 .OrderBy(value => value)
@@ -362,7 +371,7 @@
             ) &&
             (string.IsNullOrEmpty(searchType) || r.Type.ToString() == searchType) &&
             (string.IsNullOrEmpty(searchRestaurantType) || r.RestaurantType == searchRestaurantType) &&
-            (string.IsNullOrEmpty(searchFood) || r.Food == searchFood)
+            (string.IsNullOrEmpty(searchVille) || r.Ville == searchVille)
         ).ToList();
     }
 
@@ -371,7 +380,7 @@
         searchText = string.Empty;
         searchType = string.Empty;
         searchRestaurantType = string.Empty;
-        searchFood = string.Empty;
+        searchVille = string.Empty;
         FilteredRestaurants = ListeRestaurants.ToList();
     }
 
@@ -389,6 +398,7 @@
             EstFiable = resto.EstFiable,
             LienCommande = resto.LienCommande,
             RestaurantType = resto.RestaurantType,
+            Ville = resto.Ville,
             Food = resto.Food
         };
         messageErreur = string.Empty;
