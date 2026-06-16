@@ -1,0 +1,508 @@
+﻿@page "/"
+@inject IJSRuntime JS
+@inject SupabaseService SupabaseService
+@using RestoLoc.Services
+
+<PageTitle>RestoLoc Pro</PageTitle>
+
+<div class="container mt-4">
+    <section class="hero-card food-hero mb-5 p-5 shadow-soft">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-4">
+            <div>
+                <p class="eyebrow mb-2">Restaurant Dashboard</p>
+                <h1 class="hero-title mb-3">Mahalal</h1>
+                <p class="hero-subtitle mb-0">Gère facilement tes restaurants avec un style gourmand, moderne et chaleureux.</p>
+            </div>
+            <div class="text-lg-end align-self-center">
+                <span class="badge bg-gradient py-2 px-3">Food App</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Ajouter/Éditer -->
+    @if (restoEnEdition == null)
+    {
+        <div class="card p-3 mb-5 border-primary shadow-sm">
+            <h5 class="card-title text-primary"><i class="bi bi-plus-circle-fill"></i> Ajouter un restaurant</h5>
+            <p class="small text-muted mb-3">Seul le nom est obligatoire. Les autres champs sont optionnels.</p>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" @bind="nouveauResto.Nom" class="form-control form-control-sm" placeholder="Nom du restaurant" />
+                </div>
+                <div class="col-md-3">
+                    <input type="text" @bind="nouveauResto.Telephone" class="form-control form-control-sm" placeholder="Téléphone" />
+                </div>
+                <div class="col-md-2">
+                    <input type="text" @bind="nouveauResto.OriginePoulet" class="form-control form-control-sm" placeholder="Origine Poulet" />
+                </div>
+                <div class="col-md-2">
+                    <input type="text" @bind="nouveauResto.OrigineViande" class="form-control form-control-sm" placeholder="Origine Viande" />
+                </div>
+                <div class="col-md-2">
+                    <select @bind="nouveauResto.Type" class="form-select form-select-sm">
+                        <option value="@TypeRestaurant.Physique">Boutique Physique</option>
+                        <option value="@TypeRestaurant.EnLigne">Commande En Ligne Only</option>
+                    </select>
+                </div>
+                <div class="col-12"></div>
+                <div class="col-md-3">
+                    <input type="text" @bind="nouveauResto.RestaurantType" class="form-control form-control-sm" placeholder="Type Restaurant" />
+                </div>
+                <div class="col-md-3">
+                    <input type="text" @bind="nouveauResto.Food" class="form-control form-control-sm" placeholder="Type Nourriture" />
+                </div>
+                <div class="col-md-6"></div>
+                <div class="col-12"></div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" @bind="urlGoogleMaps" class="form-control form-control-sm" placeholder="Coller l'URL Google Maps (Optionnel pour le Physique)" />
+                </div>
+                <div class="col-md-4">
+                    <input type="text" @bind="nouveauResto.LienCommande" class="form-control form-control-sm" placeholder="Lien du site de commande (Optionnel)" />
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" @bind="nouveauResto.EstFiable" id="fiableCheck">
+                        <label class="form-check-label small" for="fiableCheck">Fiable ✅</label>
+                    </div>
+                </div>
+                <div class="col-12 text-end">
+                    <button class="btn btn-success btn-sm px-4" @onclick="AjouterLeRestaurant">Enregistrer</button>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(messageErreur)) { <div class="text-danger small mt-2">@messageErreur</div> }
+        </div>
+    }
+    else
+    {
+        <div class="card p-3 mb-5 border-warning shadow-sm">
+            <h5 class="card-title text-warning"><i class="bi bi-pencil-fill"></i> Éditer le restaurant</h5>
+            <div class="row g-3 mb-2">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-warning">Nom du restaurant</label>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-warning">Téléphone</label>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-warning">Origine Poulet</label>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-warning">Origine Viande</label>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small text-warning">Type</label>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <input type="text" @bind="restoEnEdition.Nom" class="form-control form-control-sm" placeholder="Nom du restaurant" />
+                </div>
+                <div class="col-md-2">
+                    <input type="text" @bind="restoEnEdition.Telephone" class="form-control form-control-sm" placeholder="Téléphone" />
+                </div>
+                <div class="col-md-2">
+                    <input type="text" @bind="restoEnEdition.OriginePoulet" class="form-control form-control-sm" placeholder="Origine Poulet" />
+                </div>
+                <div class="col-md-2">
+                    <input type="text" @bind="restoEnEdition.OrigineViande" class="form-control form-control-sm" placeholder="Origine Viande" />
+                </div>
+                <div class="col-md-3">
+                    <select @bind="restoEnEdition.Type" class="form-select form-select-sm">
+                        <option value="@TypeRestaurant.Physique">Boutique Physique</option>
+                        <option value="@TypeRestaurant.EnLigne">Commande En Ligne Only</option>
+                    </select>
+                </div>
+                <div class="col-12"></div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-warning">Type Restaurant</label>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-warning">Type Nourriture</label>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <input type="text" @bind="restoEnEdition.RestaurantType" class="form-control form-control-sm" placeholder="Type Restaurant" />
+                </div>
+                <div class="col-md-2">
+                    <input type="text" @bind="restoEnEdition.Food" class="form-control form-control-sm" placeholder="Type Nourriture" />
+                </div>
+                <div class="col-12"></div>
+                @if (restoEnEdition.Type == TypeRestaurant.Physique)
+                {
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-warning">Latitude</label>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold small text-warning">Longitude</label>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold small text-warning">Lien du site de commande</label>
+                    </div>
+                }
+                <div class="col-md-2">
+                    <label class="form-label fw-bold small text-warning">Fiable</label>
+                </div>
+            </div>
+            <div class="row g-3">
+                @if (restoEnEdition.Type == TypeRestaurant.Physique)
+                {
+                    <div class="col-md-6">
+                        <input type="number" @bind="restoEnEdition.Latitude" step="0.0001" class="form-control form-control-sm" placeholder="Latitude" />
+                    </div>
+                    <div class="col-md-6">
+                        <input type="number" @bind="restoEnEdition.Longitude" step="0.0001" class="form-control form-control-sm" placeholder="Longitude" />
+                    </div>
+                }
+                else
+                {
+                    <div class="col-md-8">
+                        <input type="text" @bind="restoEnEdition.LienCommande" class="form-control form-control-sm" placeholder="Lien du site de commande" />
+                    </div>
+                }
+                <div class="col-md-2 d-flex align-items-center">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" @bind="restoEnEdition.EstFiable" id="fiableCheckEdit">
+                        <label class="form-check-label small" for="fiableCheckEdit">Fiable ✅</label>
+                    </div>
+                </div>
+                <div class="col-12 text-end">
+                    <button class="btn btn-warning btn-sm px-4 me-2" @onclick="EnregistrerModifications">Enregistrer les modifications</button>
+                    <button class="btn btn-secondary btn-sm px-4" @onclick="AnnulerEdition">Annuler</button>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(messageErreur)) { <div class="text-danger small mt-2">@messageErreur</div> }
+        </div>
+    }
+
+    <div class="card p-3 mb-5 border-secondary shadow-sm">
+        <h5 class="card-title text-secondary"><i class="bi bi-funnel"></i> Filtrer les restaurants</h5>
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <input type="text" @bind="searchText" class="form-control form-control-sm" placeholder="Recherche texte..." />
+            </div>
+            <div class="col-md-2">
+                <select @bind="searchType" class="form-select form-select-sm">
+                    <option value="">Tous types</option>
+                    <option value="Physique">Physique</option>
+                    <option value="EnLigne">En ligne</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select @bind="searchRestaurantType" class="form-select form-select-sm">
+                    <option value="">Tous types restaurant</option>
+                    @foreach (var type in RestaurantTypeOptions)
+                    {
+                        <option value="@type">@type</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select @bind="searchFood" class="form-select form-select-sm">
+                    <option value="">Toutes nourritures</option>
+                    @foreach (var food in FoodOptions)
+                    {
+                        <option value="@food">@food</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-1 d-grid">
+                <button class="btn btn-outline-primary btn-sm" @onclick="ApplyFilter">Appliquer</button>
+            </div>
+            <div class="col-md-1 d-grid">
+                <button class="btn btn-outline-secondary btn-sm" @onclick="ResetFilter">Réinitialiser</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 border-end">
+            <h3 class="mb-3 text-secondary"><i class="bi bi-shop"></i> Établissements Physiques</h3>
+            <div class="row row-cols-1 g-3">
+                @foreach (var resto in FilteredRestaurants.Where(r => r.Type == TypeRestaurant.Physique))
+                {
+                    <div class="col">
+                        <div class="card shadow-sm border-0 bg-light">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h5 class="fw-bold">@resto.Nom</h5>
+                                    <span class="badge @(resto.EstFiable ? "bg-success" : "bg-danger")">
+                                        @(resto.EstFiable ? "Fiable" : "Non Fiable")
+                                    </span>
+                                </div>
+                                <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
+                                <p class="small mb-1">🏢 Type : @resto.RestaurantType | 🍴 Nourriture : @resto.Food</p>
+                                <p class="small mb-2">📞 Tél : <a href="tel:@resto.Telephone">@resto.Telephone</a></p>
+                                <a href="https://www.google.com/maps/search/?api=1&query=@resto.Latitude.ToString().Replace(",", ".") , @resto.Longitude.ToString().Replace(",", ".")" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                    <i class="bi bi-cursor-fill"></i> S'y rendre (GPS)
+                                </a>
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-warning btn-sm" @onclick="() => CommencerEdition(resto)">
+                                        <i class="bi bi-pencil"></i> Éditer
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick="async () => await SupprimerRestaurant(resto)">
+                                        <i class="bi bi-trash"></i> Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h3 class="mb-3 text-secondary"><i class="bi bi-laptop"></i> Commandes En Ligne</h3>
+            <div class="row row-cols-1 g-3">
+                @foreach (var resto in FilteredRestaurants.Where(r => r.Type == TypeRestaurant.EnLigne))
+                {
+                    <div class="col">
+                        <div class="card shadow-sm border-0 bg-light">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h5 class="fw-bold">@resto.Nom</h5>
+                                    <span class="badge @(resto.EstFiable ? "bg-success" : "bg-danger")">
+                                        @(resto.EstFiable ? "Fiable" : "Non Fiable")
+                                    </span>
+                                </div>
+                                <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
+                                <p class="small mb-1">🏢 Type : @resto.RestaurantType | 🍴 Nourriture : @resto.Food</p>
+                                @if (!string.IsNullOrEmpty(resto.LienCommande))
+                                {
+                                    <a href="@resto.LienCommande" target="_blank" class="btn btn-warning btn-sm w-100 mb-2 text-dark fw-bold">
+                                        <i class="bi bi-cart-fill"></i> Commander en ligne
+                                    </a>
+                                }
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-warning btn-sm" @onclick="() => CommencerEdition(resto)">
+                                        <i class="bi bi-pencil"></i> Éditer
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick="async () => await SupprimerRestaurant(resto)">
+                                        <i class="bi bi-trash"></i> Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string searchText = string.Empty;
+    private string searchType = string.Empty;
+    private string searchRestaurantType = string.Empty;
+    private string searchFood = string.Empty;
+    private List<string> RestaurantTypeOptions = new();
+    private List<string> FoodOptions = new();
+    private string urlGoogleMaps = string.Empty;
+    private string messageErreur = string.Empty;
+    private Restaurant nouveauResto = new();
+    private Restaurant? restoEnEdition = null;
+    private List<Restaurant> ListeRestaurants = new();
+    private List<Restaurant> FilteredRestaurants = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChargerRestaurants();
+    }
+
+    private async Task ChargerRestaurants()
+    {
+        try
+        {
+            ListeRestaurants = await SupabaseService.GetRestaurantsAsync();
+            RestaurantTypeOptions = ListeRestaurants
+                .Select(r => r.RestaurantType)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct()
+                .OrderBy(value => value)
+                .ToList();
+
+            FoodOptions = ListeRestaurants
+                .Select(r => r.Food)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct()
+                .OrderBy(value => value)
+                .ToList();
+
+            FilteredRestaurants = ListeRestaurants.ToList();
+        }
+        catch (Exception ex)
+        {
+            messageErreur = $"Erreur lors du chargement des restaurants: {ex.Message}";
+        }
+    }
+
+    private void ApplyFilter()
+    {
+        var text = searchText?.Trim().ToLowerInvariant() ?? string.Empty;
+
+        FilteredRestaurants = ListeRestaurants.Where(r =>
+            (string.IsNullOrEmpty(text) ||
+                (r.Nom?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                (r.Telephone?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                (r.OriginePoulet?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                (r.OrigineViande?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                (r.RestaurantType?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                (r.Food?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                (r.LienCommande?.Contains(text, StringComparison.OrdinalIgnoreCase) == true)
+            ) &&
+            (string.IsNullOrEmpty(searchType) || r.Type.ToString() == searchType) &&
+            (string.IsNullOrEmpty(searchRestaurantType) || r.RestaurantType == searchRestaurantType) &&
+            (string.IsNullOrEmpty(searchFood) || r.Food == searchFood)
+        ).ToList();
+    }
+
+    private void ResetFilter()
+    {
+        searchText = string.Empty;
+        searchType = string.Empty;
+        searchRestaurantType = string.Empty;
+        searchFood = string.Empty;
+        FilteredRestaurants = ListeRestaurants.ToList();
+    }
+
+    private void CommencerEdition(Restaurant resto)
+    {
+        // Créer une copie pour l'édition
+        restoEnEdition = new Restaurant
+        {
+            Id = resto.Id,
+            Nom = resto.Nom,
+            Telephone = resto.Telephone,
+            OriginePoulet = resto.OriginePoulet,
+            OrigineViande = resto.OrigineViande,
+            Latitude = resto.Latitude,
+            Longitude = resto.Longitude,
+            Type = resto.Type,
+            EstFiable = resto.EstFiable,
+            LienCommande = resto.LienCommande,
+            RestaurantType = resto.RestaurantType,
+            Food = resto.Food
+        };
+        messageErreur = string.Empty;
+    }
+
+    private void AnnulerEdition()
+    {
+        restoEnEdition = null;
+        messageErreur = string.Empty;
+    }
+
+    private async Task EnregistrerModifications()
+    {
+        if (restoEnEdition == null)
+            return;
+
+        messageErreur = string.Empty;
+
+        // Validation du nom
+        if (string.IsNullOrWhiteSpace(restoEnEdition.Nom))
+        {
+            messageErreur = "Le nom du restaurant est obligatoire.";
+            return;
+        }
+
+        try
+        {
+            var success = await SupabaseService.UpdateRestaurantAsync(restoEnEdition);
+            if (success)
+            {
+                restoEnEdition = null;
+                await ChargerRestaurants();
+            }
+            else
+            {
+                messageErreur = "Erreur lors de la mise à jour du restaurant.";
+            }
+        }
+        catch (Exception ex)
+        {
+            messageErreur = $"Erreur: {ex.Message}";
+        }
+    }
+
+    private async Task SupprimerRestaurant(Restaurant resto)
+    {
+        try
+        {
+            var success = await SupabaseService.DeleteRestaurantAsync(resto.Id);
+            if (success)
+            {
+                await ChargerRestaurants();
+            }
+            else
+            {
+                messageErreur = "Erreur lors de la suppression du restaurant.";
+            }
+        }
+        catch (Exception ex)
+        {
+            messageErreur = $"Erreur: {ex.Message}";
+        }
+    }
+
+    private async Task AjouterLeRestaurant()
+    {
+        messageErreur = string.Empty;
+
+        // Si l'utilisateur a collé une URL, on tente l'analyse automatique
+        if (!string.IsNullOrWhiteSpace(urlGoogleMaps))
+        {
+            var restoAutomatique = Calculs.AnalyserUrlGoogleMaps(urlGoogleMaps);
+            if (restoAutomatique != null)
+            {
+                // Si le nom a été trouvé dans l'URL, on le prend, sinon on garde celui du champ texte
+                if (!string.IsNullOrEmpty(restoAutomatique.Nom))
+                {
+                    nouveauResto.Nom = restoAutomatique.Nom;
+                }
+                
+                nouveauResto.Latitude = restoAutomatique.Latitude;
+                nouveauResto.Longitude = restoAutomatique.Longitude;
+                nouveauResto.Type = TypeRestaurant.Physique;
+                nouveauResto.EstFiable = true;
+            }
+            else
+            {
+                messageErreur = "Impossible d'analyser cette URL. Vérifiez qu'il s'agit d'un lien complet du navigateur.";
+                return;
+            }
+        }
+
+        // Validation finale du nom
+        if (string.IsNullOrWhiteSpace(nouveauResto.Nom))
+        {
+            messageErreur = "Le nom du restaurant n'a pas pu être détecté et est obligatoire.";
+            return;
+        }
+
+        try
+        {
+            var success = await SupabaseService.AddRestaurantAsync(nouveauResto);
+            if (success)
+            {
+                // Réinitialisation
+                nouveauResto = new Restaurant();
+                urlGoogleMaps = string.Empty;
+                await ChargerRestaurants();
+            }
+            else
+            {
+                messageErreur = "Erreur lors de l'ajout du restaurant.";
+            }
+        }
+        catch (Exception ex)
+        {
+            messageErreur = $"Erreur: {ex.Message}";
+        }
+    }
+}
