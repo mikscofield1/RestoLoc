@@ -434,7 +434,7 @@
     {
         try
         {
-            var success = await SupabaseService.DeleteRestaurantAsync(resto.Id);
+            var success = await SupabaseService.DeleteRestaurantAsync(resto.Nom);
             if (success)
             {
                 await ChargerRestaurants();

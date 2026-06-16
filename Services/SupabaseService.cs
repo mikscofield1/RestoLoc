@@ -30,29 +30,33 @@ public class SupabaseService
     {
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_url}/rest/v1/restaurants?select=*");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_url}/rest/v1/restaurants");
             AddHeaders(request);
             
             var response = await _httpClient.SendAsync(request);
             
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine($"Erreur: {response.StatusCode}");
+                var errorBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur: {response.StatusCode} - {errorBody}");
                 return new List<Restaurant>();
             }
 
             var json = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"GET Response: {json}");
             var restaurants = new List<Restaurant>();
             using (var doc = JsonDocument.Parse(json))
             {
                 var root = doc.RootElement;
                 if (root.ValueKind == JsonValueKind.Array)
                 {
+                    int idx = 0;
                     foreach (var el in root.EnumerateArray())
                     {
                         var resto = new Restaurant();
-                        if (el.TryGetProperty("id", out var idEl) && idEl.ValueKind == JsonValueKind.Number)
-                            resto.Id = idEl.GetInt32();
+                        
+                        // Use index as ID since no id/rowid column exists
+                        resto.Id = idx;
 
                         if (el.TryGetProperty("nom", out var nomEl) && nomEl.ValueKind != JsonValueKind.Null)
                             resto.Nom = nomEl.GetString() ?? string.Empty;
@@ -94,6 +98,7 @@ public class SupabaseService
                             resto.Food = ParseJsonStringOrArray(foodEl);
 
                         restaurants.Add(resto);
+                        idx++;
                     }
                 }
             }
@@ -169,7 +174,8 @@ public class SupabaseService
             });
 
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{_url}/rest/v1/restaurants?id=eq.{restaurant.Id}")
+            var nomFilter = Uri.EscapeDataString(restaurant.Nom ?? "");
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{_url}/rest/v1/restaurants?nom=eq.{nomFilter}")
             {
                 Content = content
             };
@@ -191,14 +197,33 @@ public class SupabaseService
         }
     }
 
-    public async Task<bool> DeleteRestaurantAsync(int id)
+    public async Task<bool> DeleteRestaurantAsync(string nom)
     {
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Delete, $"{_url}/rest/v1/restaurants?id=eq.{id}");
+            // Use 'nom' (restaurant name) as the unique identifier since 'id' column doesn't exist
+            var nomFilter = Uri.EscapeDataString(nom ?? "");
+            var deleteUrl = $"{_url}/rest/v1/restaurants?nom=eq.{nomFilter}";
+            
+            Console.WriteLine($"Tentative de suppression avec l'URL: {deleteUrl}");
+            
+            var request = new HttpRequestMessage(HttpMethod.Delete, deleteUrl);
             AddHeaders(request);
+            request.Headers.Add("Prefer", "return=minimal");
             
             var response = await _httpClient.SendAsync(request);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de la suppression du restaurant (Status {response.StatusCode}): {response.ReasonPhrase}");
+                Console.WriteLine($"Réponse: {responseBody}");
+            }
+            else
+            {
+                Console.WriteLine("Suppression réussie!");
+            }
+            
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
