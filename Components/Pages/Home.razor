@@ -22,10 +22,17 @@
     <!-- Section Ajouter/Éditer -->
     @if (restoEnEdition == null)
     {
-        <div class="card p-3 mb-5 border-primary shadow-sm">
-            <h5 class="card-title text-primary"><i class="bi bi-plus-circle-fill"></i> Ajouter un restaurant</h5>
-            <p class="small text-muted mb-3">Seul le nom est obligatoire. Les autres champs sont optionnels.</p>
-            <div class="row g-3">
+        <div class="card mb-5 border-primary shadow-sm">
+            <div class="card-header p-3 bg-light">
+                <button class="btn btn-link btn-sm text-primary text-decoration-none" @onclick="@(() => showAddForm = !showAddForm)" data-bs-toggle="collapse" data-bs-target="#addRestaurantForm">
+                    <i class="bi @(showAddForm ? "bi-dash-lg" : "bi-plus-lg")"></i> 
+                    <span class="fw-bold">Ajouter un restaurant</span>
+                </button>
+            </div>
+            <div id="addRestaurantForm" class="collapse @(showAddForm ? "show" : "")" style="@(showAddForm ? "" : "")">
+                <div class="card-body p-3">
+                    <p class="small text-muted mb-3">Seul le nom est obligatoire. Les autres champs sont optionnels.</p>
+                    <div class="row g-3">
                 <div class="col-md-3">
                     <input type="text" @bind="nouveauResto.Nom" class="form-control form-control-sm" placeholder="Nom du restaurant" />
                 </div>
@@ -83,6 +90,8 @@
                 </div>
             </div>
             @if (!string.IsNullOrEmpty(messageErreur)) { <div class="text-danger small mt-2">@messageErreur</div> }
+                </div>
+            </div>
         </div>
     }
     else
@@ -322,6 +331,7 @@
     private Restaurant? restoEnEdition = null;
     private List<Restaurant> ListeRestaurants = new();
     private List<Restaurant> FilteredRestaurants = new();
+    private bool showAddForm = false;
 
     protected override async Task OnInitializedAsync()
     {
