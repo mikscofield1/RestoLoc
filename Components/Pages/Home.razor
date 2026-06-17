@@ -255,6 +255,10 @@
                                 </div>
                                           <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
                                         <p class="small mb-1">📍 <strong>@resto.Ville</strong> | 🏢 Type : @resto.RestaurantType</p>
+                                        @if (!string.IsNullOrWhiteSpace(resto.Food))
+                                        {
+                                            <p class="small mb-1">🍽️ Nourriture : @resto.Food</p>
+                                        }
                                           <p class="small mb-2">📞 Tél : <a href="tel:@resto.Telephone">@resto.Telephone</a></p>
                                 @if (!string.IsNullOrWhiteSpace(resto.LienCommande))
                                 {
@@ -293,6 +297,10 @@
                                 </div>
                                 <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
                                     <p class="small mb-1">📍 <strong>@resto.Ville</strong> | 🏢 Type : @resto.RestaurantType</p>
+                                @if (!string.IsNullOrWhiteSpace(resto.Food))
+                                {
+                                    <p class="small mb-1">🍽️ Nourriture : @resto.Food</p>
+                                }
                                 @if (!string.IsNullOrEmpty(resto.LienCommande))
                                 {
                                     <a href="@resto.LienCommande" target="_blank" class="btn btn-warning btn-sm w-100 mb-2 text-dark fw-bold">
