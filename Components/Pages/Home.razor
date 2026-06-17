@@ -1,5 +1,6 @@
 ﻿@page "/"
 @inject IJSRuntime JS
+@inject HttpClient Http
 @inject SupabaseService SupabaseService
 @using RestoLoc.Services
 
@@ -61,7 +62,7 @@
                 </div>
                 <div class="col-md-3"></div>
                 <div class="col-12"></div>
-            </div
+            </div>
             <div class="row g-3">
                 @if (nouveauResto.Type == TypeRestaurant.Physique)
                 {
@@ -486,6 +487,7 @@
         // Si l'utilisateur a collé une URL, on tente l'analyse automatique
         if (!string.IsNullOrWhiteSpace(urlGoogleMaps))
         {
+            urlGoogleMaps = await Calculs.ResolveGoogleMapsShortUrlAsync(Http, urlGoogleMaps);
             var restoAutomatique = Calculs.AnalyserUrlGoogleMaps(urlGoogleMaps);
             if (restoAutomatique != null)
             {
