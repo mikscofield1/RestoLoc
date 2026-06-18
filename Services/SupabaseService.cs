@@ -234,6 +234,154 @@ public class SupabaseService
         }
     }
 
+    public async Task<List<Comment>> GetCommentsByRestaurantAsync(string restaurantNom)
+    {
+        try
+        {
+            var nomFilter = Uri.EscapeDataString(restaurantNom ?? "");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_url}/rest/v1/comments?restaurant_nom=eq.{nomFilter}&order=created_at.desc");
+            AddHeaders(request);
+            
+            var response = await _httpClient.SendAsync(request);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Erreur lors de la récupération des commentaires: {response.StatusCode}");
+                return new List<Comment>();
+            }
+
+            var json = await response.Content.ReadAsStringAsync();
+            var comments = new List<Comment>();
+            
+            using (var doc = JsonDocument.Parse(json))
+            {
+                var root = doc.RootElement;
+                if (root.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var el in root.EnumerateArray())
+                    {
+                        var comment = new Comment();
+
+                        if (el.TryGetProperty("id", out var idEl) && idEl.ValueKind == JsonValueKind.Number)
+                            comment.Id = (int)idEl.GetInt64();
+
+                        if (el.TryGetProperty("restaurant_nom", out var restoEl) && restoEl.ValueKind != JsonValueKind.Null)
+                            comment.RestaurantNom = restoEl.GetString() ?? string.Empty;
+
+                        if (el.TryGetProperty("texte", out var texteEl) && texteEl.ValueKind != JsonValueKind.Null)
+                            comment.Texte = texteEl.GetString() ?? string.Empty;
+
+                        if (el.TryGetProperty("created_at", out var dateEl) && dateEl.ValueKind != JsonValueKind.Null)
+                        {
+                            if (DateTime.TryParse(dateEl.GetString(), out var date))
+                                comment.CreatedAt = date;
+                        }
+
+                        comments.Add(comment);
+                    }
+                }
+            }
+
+            return comments;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la récupération des commentaires: {ex.Message}");
+            return new List<Comment>();
+        }
+    }
+
+    public async Task<bool> AddCommentAsync(Comment comment)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(new
+            {
+                restaurant_nom = comment.RestaurantNom,
+                texte = comment.Texte
+            });
+
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{_url}/rest/v1/comments")
+            {
+                Content = content
+            };
+            AddHeaders(request);
+            
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de l'ajout du commentaire: {response.StatusCode} {response.ReasonPhrase}");
+                Console.WriteLine(responseBody);
+            }
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'ajout du commentaire: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteCommentAsync(int commentId)
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"{_url}/rest/v1/comments?id=eq.{commentId}");
+            AddHeaders(request);
+            request.Headers.Add("Prefer", "return=minimal");
+            
+            var response = await _httpClient.SendAsync(request);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de la suppression du commentaire: {response.StatusCode}");
+                Console.WriteLine($"Réponse: {responseBody}");
+            }
+            
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la suppression du commentaire: {ex.Message}");
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateCommentAsync(Comment comment)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(new
+            {
+                texte = comment.Texte
+            });
+
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{_url}/rest/v1/comments?id=eq.{comment.Id}")
+            {
+                Content = content
+            };
+            AddHeaders(request);
+            
+            var response = await _httpClient.SendAsync(request);
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de la mise à jour du commentaire: {response.StatusCode} {response.ReasonPhrase}");
+                Console.WriteLine(responseBody);
+            }
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la mise à jour du commentaire: {ex.Message}");
+            return false;
+        }
+    }
+
     private void AddHeaders(HttpRequestMessage request)
     {
         request.Headers.Add("apikey", _key);

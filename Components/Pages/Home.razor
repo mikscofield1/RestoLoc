@@ -267,47 +267,91 @@
                                         <i class="bi bi-geo-alt-fill"></i> Ouvrir sur Google Maps
                                     </a>
                                 }
-                                <div class="btn-group w-100" role="group">
-                                    <button type="button" class="btn btn-outline-warning btn-sm" @onclick="() => CommencerEdition(resto)">
-                                        <i class="bi bi-pencil"></i> Éditer
+                                
+                                <!-- Section Commentaires -->
+                                <div class="border-top pt-3 mt-3">
+                                    @{
+                                        var commentCount = GetComments(resto.Nom).Count;
+                                        var badgeClass = commentCount > 0 ? "bg-warning" : "bg-secondary";
+                                    }
+                                    <button type="button" class="btn btn-sm w-100 mb-2 @(AreCommentsExpanded(resto.Nom) ? "btn-warning" : "btn-outline-secondary")" @onclick="async () => await ChargerCommentaires(resto.Nom)">
+                                        <i class="bi @(AreCommentsExpanded(resto.Nom) ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                                        <span>@(AreCommentsExpanded(resto.Nom) ? "Masquer" : "Voir") les commentaires</span>
+                                        <span class="badge @badgeClass ms-2">@commentCount</span>
                                     </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick="async () => await SupprimerRestaurant(resto)">
-                                        <i class="bi bi-trash"></i> Supprimer
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
 
-        <div class="col-md-6">
-            <h3 class="mb-3 text-secondary"><i class="bi bi-laptop"></i> Commandes En Ligne</h3>
-            <div class="row row-cols-1 g-3">
-                @foreach (var resto in FilteredRestaurants.Where(r => r.Type == TypeRestaurant.EnLigne))
-                {
-                    <div class="col">
-                        <div class="card shadow-sm border-0 bg-light">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <h5 class="fw-bold">@resto.Nom</h5>
-                                    <span class="badge @(resto.EstFiable ? "bg-success" : "bg-danger")">
-                                        @(resto.EstFiable ? "Fiable" : "Non Fiable")
-                                    </span>
+                                    @if (AreCommentsExpanded(resto.Nom) && AreCommentsLoaded(resto.Nom))
+                                    {
+                                        var comments = GetComments(resto.Nom);
+                                        
+                                        <div class="comments-list mb-3" style="max-height: 250px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 5px; background-color: #f8f9fa;">
+                                            @if (comments.Count == 0)
+                                            {
+                                                <p class="text-muted small mb-0">Aucun commentaire pour le moment.</p>
+                                            }
+                                            else
+                                            {
+                                                @foreach (var comment in comments)
+                                                {
+                                                    <div class="comment-item mb-2 pb-2 border-bottom">
+                                                        @if (editingCommentId == comment.Id)
+                                                        {
+                                                            <div>
+                                                                <textarea class="form-control form-control-sm" rows="2" @bind="editingCommentText"></textarea>
+                                                                <div class="mt-2 d-flex gap-2">
+                                                                    <button type="button" class="btn btn-success btn-sm flex-grow-1" @onclick="async () => await EnregistrerEditionCommentaire(resto.Nom, comment)">
+                                                                        <i class="bi bi-check-lg"></i> Enregistrer
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-secondary btn-sm" @onclick="AnnulerEditionCommentaire">
+                                                                        <i class="bi bi-x-lg"></i> Annuler
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="flex-grow-1">
+                                                                    <p class="mb-1 small" style="white-space: pre-wrap; word-wrap: break-word;">@comment.Texte</p>
+                                                                    <small class="text-muted">@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                                                </div>
+                                                                <div class="d-flex gap-1">
+                                                                    <button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => CommencerEditionCommentaire(comment)" title="Éditer">
+                                                                        <i class="bi bi-pencil"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="async () => await SupprimerCommentaire(resto.Nom, comment)" title="Supprimer">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+
+                                        <!-- Formulaire d'ajout de commentaire -->
+                                        <button type="button" class="btn btn-success btn-sm w-100 mb-2" @onclick="() => ToggleCommentForm(resto.Nom)">
+                                            <i class="bi bi-plus-lg"></i> Ajouter un commentaire
+                                        </button>
+
+                                        @if (IsCommentFormVisible(resto.Nom))
+                                        {
+                                            <div class="card card-body p-2 mb-2" style="background-color: #f0f8ff;">
+                                                <textarea class="form-control form-control-sm" rows="3" placeholder="Entrez votre commentaire (ex: Pizza tikka bonne, Limonade trop sucrée, Arancini chers...)" value="@GetNewCommentText(resto.Nom)" @oninput="@(e => SetNewCommentText(resto.Nom, e.Value?.ToString() ?? ""))"></textarea>
+                                                <div class="mt-2 d-flex gap-2">
+                                                    <button type="button" class="btn btn-success btn-sm flex-grow-1" @onclick="async () => await AjouterCommentaire(resto.Nom)">
+                                                        <i class="bi bi-check-lg"></i> Envoyer
+                                                    </button>
+                                                    <button type="button" class="btn btn-secondary btn-sm" @onclick="() => ToggleCommentForm(resto.Nom)">
+                                                        <i class="bi bi-x-lg"></i> Annuler
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
                                 </div>
-                                <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
-                                    <p class="small mb-1">📍 <strong>@resto.Ville</strong> | 🏢 Type : @resto.RestaurantType</p>
-                                @if (!string.IsNullOrWhiteSpace(resto.Food))
-                                {
-                                    <p class="small mb-1">🍽️ Nourriture : @resto.Food</p>
-                                }
-                                @if (!string.IsNullOrEmpty(resto.LienCommande))
-                                {
-                                    <a href="@resto.LienCommande" target="_blank" class="btn btn-warning btn-sm w-100 mb-2 text-dark fw-bold">
-                                        <i class="bi bi-cart-fill"></i> Commander en ligne
-                                    </a>
-                                }
+
                                 <div class="btn-group w-100" role="group">
                                     <button type="button" class="btn btn-outline-warning btn-sm" @onclick="() => CommencerEdition(resto)">
                                         <i class="bi bi-pencil"></i> Éditer
@@ -340,6 +384,16 @@
     private List<Restaurant> FilteredRestaurants = new();
     private bool showAddForm = false;
 
+    // Variables pour les commentaires
+    private Dictionary<string, List<Comment>> commentsCache = new();
+    private Dictionary<string, bool> expandedComments = new();
+    private Dictionary<string, string> newCommentText = new();
+    private Dictionary<string, bool> showCommentForm = new();
+    
+    // Variables pour l'édition des commentaires
+    private int? editingCommentId = null;
+    private string editingCommentText = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         await ChargerRestaurants();
@@ -365,6 +419,13 @@
                 .ToList();
 
             FilteredRestaurants = ListeRestaurants.ToList();
+
+            // Pré-charger les commentaires pour tous les restaurants
+            foreach (var resto in ListeRestaurants)
+            {
+                var comments = await SupabaseService.GetCommentsByRestaurantAsync(resto.Nom);
+                commentsCache[resto.Nom] = comments;
+            }
         }
         catch (Exception ex)
         {
@@ -533,6 +594,149 @@
         catch (Exception ex)
         {
             messageErreur = $"Erreur: {ex.Message}";
+        }
+    }
+
+    // Méthodes pour les commentaires
+    private async Task ChargerCommentaires(string restaurantNom)
+    {
+        if (!commentsCache.ContainsKey(restaurantNom))
+        {
+            var comments = await SupabaseService.GetCommentsByRestaurantAsync(restaurantNom);
+            commentsCache[restaurantNom] = comments;
+        }
+        
+        if (!expandedComments.ContainsKey(restaurantNom))
+            expandedComments[restaurantNom] = false;
+        
+        expandedComments[restaurantNom] = !expandedComments[restaurantNom];
+    }
+
+    private async Task AjouterCommentaire(string restaurantNom)
+    {
+        if (!newCommentText.ContainsKey(restaurantNom) || string.IsNullOrWhiteSpace(newCommentText[restaurantNom]))
+            return;
+
+        try
+        {
+            var comment = new Comment
+            {
+                RestaurantNom = restaurantNom,
+                Texte = newCommentText[restaurantNom],
+                CreatedAt = DateTime.Now
+            };
+
+            var success = await SupabaseService.AddCommentAsync(comment);
+            if (success)
+            {
+                newCommentText[restaurantNom] = string.Empty;
+                showCommentForm[restaurantNom] = false;
+                
+                // Recharger les commentaires
+                commentsCache[restaurantNom] = await SupabaseService.GetCommentsByRestaurantAsync(restaurantNom);
+            }
+        }
+        catch (Exception ex)
+        {
+            messageErreur = $"Erreur lors de l'ajout du commentaire: {ex.Message}";
+        }
+    }
+
+    private async Task SupprimerCommentaire(string restaurantNom, Comment comment)
+    {
+        try
+        {
+            var success = await SupabaseService.DeleteCommentAsync(comment.Id);
+            if (success)
+            {
+                // Recharger les commentaires
+                commentsCache[restaurantNom] = await SupabaseService.GetCommentsByRestaurantAsync(restaurantNom);
+            }
+        }
+        catch (Exception ex)
+        {
+            messageErreur = $"Erreur lors de la suppression du commentaire: {ex.Message}";
+        }
+    }
+
+    private bool AreCommentsLoaded(string restaurantNom)
+    {
+        return commentsCache.ContainsKey(restaurantNom);
+    }
+
+    private List<Comment> GetComments(string restaurantNom)
+    {
+        return commentsCache.ContainsKey(restaurantNom) ? commentsCache[restaurantNom] : new List<Comment>();
+    }
+
+    private bool AreCommentsExpanded(string restaurantNom)
+    {
+        return expandedComments.ContainsKey(restaurantNom) && expandedComments[restaurantNom];
+    }
+
+    private string GetNewCommentText(string restaurantNom)
+    {
+        return newCommentText.ContainsKey(restaurantNom) ? newCommentText[restaurantNom] : string.Empty;
+    }
+
+    private void SetNewCommentText(string restaurantNom, string text)
+    {
+        newCommentText[restaurantNom] = text;
+    }
+
+    private bool IsCommentFormVisible(string restaurantNom)
+    {
+        return showCommentForm.ContainsKey(restaurantNom) && showCommentForm[restaurantNom];
+    }
+
+    private void ToggleCommentForm(string restaurantNom)
+    {
+        if (!showCommentForm.ContainsKey(restaurantNom))
+            showCommentForm[restaurantNom] = false;
+        
+        showCommentForm[restaurantNom] = !showCommentForm[restaurantNom];
+    }
+
+    private void CommencerEditionCommentaire(Comment comment)
+    {
+        editingCommentId = comment.Id;
+        editingCommentText = comment.Texte;
+    }
+
+    private void AnnulerEditionCommentaire()
+    {
+        editingCommentId = null;
+        editingCommentText = string.Empty;
+    }
+
+    private async Task EnregistrerEditionCommentaire(string restaurantNom, Comment comment)
+    {
+        if (editingCommentId == null || string.IsNullOrWhiteSpace(editingCommentText))
+            return;
+
+        try
+        {
+            var updatedComment = new Comment
+            {
+                Id = (int)editingCommentId,
+                RestaurantNom = restaurantNom,
+                Texte = editingCommentText,
+                CreatedAt = comment.CreatedAt
+            };
+
+            var success = await SupabaseService.UpdateCommentAsync(updatedComment);
+            if (success)
+            {
+                editingCommentId = null;
+                editingCommentText = string.Empty;
+                
+                // Recharger les commentaires
+                commentsCache[restaurantNom] = await SupabaseService.GetCommentsByRestaurantAsync(restaurantNom);
+            }
+        }
+        catch (Exception ex)
+        {
+            messageErreur = $"Erreur lors de la mise à jour du commentaire: {ex.Message}";
         }
     }
 }
