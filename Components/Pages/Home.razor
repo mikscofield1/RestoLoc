@@ -313,7 +313,7 @@
                                                             <div class="d-flex justify-content-between align-items-start">
                                                                 <div class="flex-grow-1">
                                                                     <p class="mb-1 small" style="white-space: pre-wrap; word-wrap: break-word;">@comment.Texte</p>
-                                                                    <small class="text-muted">@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                                                <small class="text-muted">@GetSaudiTime(comment.CreatedAt)</small>
                                                                 </div>
                                                                 <div class="d-flex gap-1">
                                                                     <button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => CommencerEditionCommentaire(comment)" title="Éditer">
@@ -738,5 +738,12 @@
         {
             messageErreur = $"Erreur lors de la mise à jour du commentaire: {ex.Message}";
         }
+    }
+
+    private string GetSaudiTime(DateTime createdAt)
+    {
+        var utcTime = DateTime.SpecifyKind(createdAt, DateTimeKind.Utc);
+        var saudiTime = utcTime.AddHours(3);
+        return saudiTime.ToString("dd/MM/yyyy HH:mm") + " UTC+3";
     }
 }

@@ -273,8 +273,9 @@ public class SupabaseService
 
                         if (el.TryGetProperty("created_at", out var dateEl) && dateEl.ValueKind != JsonValueKind.Null)
                         {
-                            if (DateTime.TryParse(dateEl.GetString(), out var date))
-                                comment.CreatedAt = date;
+                            var rawDate = dateEl.GetString();
+                            if (!string.IsNullOrWhiteSpace(rawDate) && DateTime.TryParse(rawDate, out var date))
+                                comment.CreatedAt = DateTime.SpecifyKind(date, DateTimeKind.Utc);
                         }
 
                         comments.Add(comment);
