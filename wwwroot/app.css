@@ -103,6 +103,26 @@ main {
     font-size: 1.05rem;
 }
 
+.header-logo {
+    max-height: 70px;
+    width: auto;
+    display: block;
+}
+
+.play-jingle-button {
+    min-width: 2.5rem;
+    min-height: 2.5rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.9;
+}
+
+.play-jingle-button:hover {
+    opacity: 1;
+}
+
 .eyebrow {
     letter-spacing: 0.28em;
     text-transform: uppercase;
@@ -206,4 +226,13 @@ main {
 article.content {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+}
+
+/* Full-width header banner */
+.header-banner {
+    display: block;
+    width: 100%;
+    height: 150px;
+    object-fit: contain;
+    object-position: center;
 }

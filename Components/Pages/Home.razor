@@ -6,17 +6,24 @@
 
 <PageTitle>RestoLoc Pro</PageTitle>
 
-<div class="container mt-4">
-    <section class="hero-card food-hero mb-5 p-5 shadow-soft">
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-4">
-            <div>
-                <h1 class="hero-title mb-3">Mahalal: le halal mahali</h1>
-            </div>
-            <div class="text-lg-end align-self-center">
-                <span class="badge bg-gradient py-2 px-3">Food App</span>
-            </div>
+<!-- Full width header banner using the provided PNG image -->
+<img src="images/logo.png" alt="Bannière Mahalal" class="header-banner" @onclick="PlayJingle" role="button" style="cursor: pointer;" tabindex="0" aria-label="Cliquez pour écouter le jingle Mahalal" />
+
+<!-- Audio controls -->
+@if (isPlaying)
+{
+    <div class="container mt-2">
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-danger btn-sm p-2" @onclick="StopJingle" title="Stop le jingle">
+                <i class="bi bi-stop-fill"></i>
+            </button>
         </div>
-    </section>
+    </div>
+}
+
+<audio id="jingleAudio" src="audio/mahalal.mp3" preload="none"></audio>
+
+<div class="container mt-4">
 
     <!-- Section Ajouter/Éditer -->
     @if (restoEnEdition == null)
@@ -366,6 +373,131 @@
                 }
             </div>
         </div>
+
+        <div class="col-md-6">
+            <h3 class="mb-3 text-secondary"><i class="bi bi-laptop"></i> Commandes En Ligne</h3>
+            <div class="row row-cols-1 g-3">
+                @foreach (var resto in FilteredRestaurants.Where(r => r.Type == TypeRestaurant.EnLigne))
+                {
+                    <div class="col">
+                        <div class="card shadow-sm border-0 bg-light">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <h5 class="fw-bold">@resto.Nom</h5>
+                                    <span class="badge @(resto.EstFiable ? "bg-success" : "bg-danger")">
+                                        @(resto.EstFiable ? "Fiable" : "Non Fiable")
+                                    </span>
+                                </div>
+                                <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
+                                <p class="small mb-1">📍 <strong>@resto.Ville</strong> | 🏢 Type : @resto.RestaurantType</p>
+                                @if (!string.IsNullOrWhiteSpace(resto.Food))
+                                {
+                                    <p class="small mb-1">🍽️ Nourriture : @resto.Food</p>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(resto.LienCommande))
+                                {
+                                    <a href="@resto.LienCommande" target="_blank" class="btn btn-warning btn-sm w-100 mb-2 text-dark fw-bold">
+                                        <i class="bi bi-cart-fill"></i> Commander en ligne
+                                    </a>
+                                }
+
+                                <!-- Section Commentaires -->
+                                <div class="border-top pt-3 mt-3">
+                                    @{
+                                        var commentCount = GetComments(resto.Nom).Count;
+                                        var badgeClass = commentCount > 0 ? "bg-warning" : "bg-secondary";
+                                    }
+                                    <button type="button" class="btn btn-sm w-100 mb-2 @(AreCommentsExpanded(resto.Nom) ? "btn-warning" : "btn-outline-secondary")" @onclick="async () => await ChargerCommentaires(resto.Nom)">
+                                        <i class="bi @(AreCommentsExpanded(resto.Nom) ? "bi-chevron-up" : "bi-chevron-down")"></i>
+                                        <span>@(AreCommentsExpanded(resto.Nom) ? "Masquer" : "Voir") les commentaires</span>
+                                        <span class="badge @badgeClass ms-2">@commentCount</span>
+                                    </button>
+
+                                    @if (AreCommentsExpanded(resto.Nom) && AreCommentsLoaded(resto.Nom))
+                                    {
+                                        var comments = GetComments(resto.Nom);
+
+                                        <div class="comments-list mb-3" style="max-height: 250px; overflow-y: auto; border: 1px solid #dee2e6; padding: 10px; border-radius: 5px; background-color: #f8f9fa;">
+                                            @if (comments.Count == 0)
+                                            {
+                                                <p class="text-muted small mb-0">Aucun commentaire pour le moment.</p>
+                                            }
+                                            else
+                                            {
+                                                @foreach (var comment in comments)
+                                                {
+                                                    <div class="comment-item mb-2 pb-2 border-bottom">
+                                                        @if (editingCommentId == comment.Id)
+                                                        {
+                                                            <div>
+                                                                <textarea class="form-control form-control-sm" rows="2" @bind="editingCommentText"></textarea>
+                                                                <div class="mt-2 d-flex gap-2">
+                                                                    <button type="button" class="btn btn-success btn-sm flex-grow-1" @onclick="async () => await EnregistrerEditionCommentaire(resto.Nom, comment)">
+                                                                        <i class="bi bi-check-lg"></i> Enregistrer
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-secondary btn-sm" @onclick="AnnulerEditionCommentaire">
+                                                                        <i class="bi bi-x-lg"></i> Annuler
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                        else
+                                                        {
+                                                            <div class="d-flex justify-content-between align-items-start">
+                                                                <div class="flex-grow-1">
+                                                                    <p class="mb-1 small" style="white-space: pre-wrap; word-wrap: break-word;">@comment.Texte</p>
+                                                                    <small class="text-muted">@GetSaudiTime(comment.CreatedAt)</small>
+                                                                </div>
+                                                                <div class="d-flex gap-1">
+                                                                    <button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => CommencerEditionCommentaire(comment)" title="Éditer">
+                                                                        <i class="bi bi-pencil"></i>
+                                                                    </button>
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="async () => await SupprimerCommentaire(resto.Nom, comment)" title="Supprimer">
+                                                                        <i class="bi bi-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+
+                                        <button type="button" class="btn btn-success btn-sm w-100 mb-2" @onclick="() => ToggleCommentForm(resto.Nom)">
+                                            <i class="bi bi-plus-lg"></i> Ajouter un commentaire
+                                        </button>
+
+                                        @if (IsCommentFormVisible(resto.Nom))
+                                        {
+                                            <div class="card card-body p-2 mb-2" style="background-color: #f0f8ff;">
+                                                <textarea class="form-control form-control-sm" rows="3" placeholder="Entrez votre commentaire (ex: Pizza tikka bonne, Limonade trop sucrée, Arancini chers...)" value="@GetNewCommentText(resto.Nom)" @oninput="@(e => SetNewCommentText(resto.Nom, e.Value?.ToString() ?? ""))"></textarea>
+                                                <div class="mt-2 d-flex gap-2">
+                                                    <button type="button" class="btn btn-success btn-sm flex-grow-1" @onclick="async () => await AjouterCommentaire(resto.Nom)">
+                                                        <i class="bi bi-check-lg"></i> Envoyer
+                                                    </button>
+                                                    <button type="button" class="btn btn-secondary btn-sm" @onclick="() => ToggleCommentForm(resto.Nom)">
+                                                        <i class="bi bi-x-lg"></i> Annuler
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-warning btn-sm" @onclick="() => CommencerEdition(resto)">
+                                        <i class="bi bi-pencil"></i> Éditer
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick="async () => await SupprimerRestaurant(resto)">
+                                        <i class="bi bi-trash"></i> Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
     </div>
 </div>
 
@@ -389,6 +521,9 @@
     private Dictionary<string, bool> expandedComments = new();
     private Dictionary<string, string> newCommentText = new();
     private Dictionary<string, bool> showCommentForm = new();
+    
+    // Audio state
+    private bool isPlaying = false;
     
     // Variables pour l'édition des commentaires
     private int? editingCommentId = null;
@@ -431,6 +566,54 @@
         {
             messageErreur = $"Erreur lors du chargement des restaurants: {ex.Message}";
         }
+    }
+
+    private async Task PlayJingle()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("playAudioById", "jingleAudio");
+            isPlaying = true;
+            messageErreur = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"PlayJingle failed: {ex}");
+            messageErreur = "Impossible de jouer le jingle (vérifiez le navigateur).";
+        }
+        StateHasChanged();
+    }
+
+    private async Task PauseJingle()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("pauseAudioById", "jingleAudio");
+            isPlaying = false;
+            messageErreur = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"PauseJingle failed: {ex}");
+            messageErreur = "Impossible de mettre en pause le jingle.";
+        }
+        StateHasChanged();
+    }
+
+    private async Task StopJingle()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("stopAudioById", "jingleAudio");
+            isPlaying = false;
+            messageErreur = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"StopJingle failed: {ex}");
+            messageErreur = "Impossible d'arrêter le jingle.";
+        }
+        StateHasChanged();
     }
 
     private void ApplyFilter()
