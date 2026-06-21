@@ -119,7 +119,7 @@
     }
     else
     {
-        <div class="card p-3 mb-5 border-warning shadow-sm">
+        <div id="editRestaurantForm" class="card p-3 mb-5 border-warning shadow-sm">
             <h5 class="card-title text-warning"><i class="bi bi-pencil-fill"></i> Éditer le restaurant</h5>
             <div class="row g-3 mb-2">
                 <div class="col-md-3">
@@ -709,9 +709,21 @@
     private string? pendingCommentRestaurantNom = null;
     private Comment? pendingComment = null;
 
+    // Scroll to edit form after render
+    private bool shouldScrollToEditForm = false;
+
     protected override async Task OnInitializedAsync()
     {
         await ChargerRestaurants();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (shouldScrollToEditForm)
+        {
+            shouldScrollToEditForm = false;
+            await JS.InvokeVoidAsync("scrollIntoViewById", "editRestaurantForm");
+        }
     }
 
     private async Task ChargerRestaurants()
@@ -846,6 +858,7 @@
         };
         originalRestaurantNom = resto.Nom;
         messageErreur = string.Empty;
+        shouldScrollToEditForm = true;
     }
 
     private void AnnulerEdition()

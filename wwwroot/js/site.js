@@ -66,3 +66,14 @@ window.customModal = {
     }
   }
 };
+
+window.scrollIntoViewById = function(elementId) {
+  try {
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } catch (err) {
+    console.warn('scrollIntoViewById error', err);
+  }
+};
