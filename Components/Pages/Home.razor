@@ -314,13 +314,48 @@
                                         @(resto.EstFiable ? "Fiable" : "Non Fiable")
                                     </span>
                                 </div>
-                                <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
-                                <p class="small mb-1">📍 <strong>@resto.Ville</strong> | 🏢 Type : @resto.RestaurantType</p>
+                                @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet) || !string.IsNullOrWhiteSpace(resto.OrigineViande))
+                                {
+                                    <p class="small mb-1">
+                                        @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet))
+                                        {
+                                            <span>🍗 Poulet : @resto.OriginePoulet</span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet) && !string.IsNullOrWhiteSpace(resto.OrigineViande))
+                                        {
+                                            <span> | </span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(resto.OrigineViande))
+                                        {
+                                            <span>🥩 Viande : @resto.OrigineViande</span>
+                                        }
+                                    </p>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(resto.Ville) || !string.IsNullOrWhiteSpace(resto.RestaurantType))
+                                {
+                                    <p class="small mb-1">
+                                        @if (!string.IsNullOrWhiteSpace(resto.Ville))
+                                        {
+                                            <span>📍 <strong>@resto.Ville</strong></span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(resto.Ville) && !string.IsNullOrWhiteSpace(resto.RestaurantType))
+                                        {
+                                            <span> | </span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(resto.RestaurantType))
+                                        {
+                                            <span>🏢 Type : @resto.RestaurantType</span>
+                                        }
+                                    </p>
+                                }
                                 @if (!string.IsNullOrWhiteSpace(resto.Food))
                                 {
                                     <p class="small mb-1">🍽️ Nourriture : @resto.Food</p>
                                 }
-                                <p class="small mb-2">📞 Tél : <a href="tel:@resto.Telephone">@resto.Telephone</a></p>
+                                @if (!string.IsNullOrWhiteSpace(resto.Telephone))
+                                {
+                                    <p class="small mb-2">📞 Tél : <a href="tel:@resto.Telephone">@resto.Telephone</a></p>
+                                }
                                 @if (!string.IsNullOrWhiteSpace(resto.LienCommande))
                                 {
                                     <a href="@resto.LienCommande" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-2">
@@ -453,8 +488,40 @@
                                         @(resto.EstFiable ? "Fiable" : "Non Fiable")
                                     </span>
                                 </div>
-                                <p class="small mb-1">🍗 Poulet : @resto.OriginePoulet | 🥩 Viande : @resto.OrigineViande</p>
-                                <p class="small mb-1">📍 <strong>@resto.Ville</strong> | 🏢 Type : @resto.RestaurantType</p>
+                                @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet) || !string.IsNullOrWhiteSpace(resto.OrigineViande))
+                                {
+                                    <p class="small mb-1">
+                                        @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet))
+                                        {
+                                            <span>🍗 Poulet : @resto.OriginePoulet</span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet) && !string.IsNullOrWhiteSpace(resto.OrigineViande))
+                                        {
+                                            <span> | </span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(resto.OrigineViande))
+                                        {
+                                            <span>🥩 Viande : @resto.OrigineViande</span>
+                                        }
+                                    </p>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(resto.Ville) || !string.IsNullOrWhiteSpace(resto.RestaurantType))
+                                {
+                                    <p class="small mb-1">
+                                        @if (!string.IsNullOrWhiteSpace(resto.Ville))
+                                        {
+                                            <span>📍 <strong>@resto.Ville</strong></span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(resto.Ville) && !string.IsNullOrWhiteSpace(resto.RestaurantType))
+                                        {
+                                            <span> | </span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(resto.RestaurantType))
+                                        {
+                                            <span>🏢 Type : @resto.RestaurantType</span>
+                                        }
+                                    </p>
+                                }
                                 @if (!string.IsNullOrWhiteSpace(resto.Food))
                                 {
                                     <p class="small mb-1">🍽️ Nourriture : @resto.Food</p>
