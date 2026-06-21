@@ -31,3 +31,38 @@ window.stopAudioById = function(id) {
     console.warn('stopAudioById error', err);
   }
 };
+
+// Custom Modal management (without Bootstrap dependency)
+window.customModal = {
+  show: function(modalId) {
+    try {
+      const modalElement = document.getElementById(modalId);
+      if (!modalElement) { console.warn('modal element not found', modalId); return; }
+      modalElement.style.display = 'block';
+      // Add backdrop
+      let backdrop = document.querySelector('.modal-backdrop');
+      if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.className = 'modal-backdrop fade show';
+        backdrop.style.display = 'block';
+        document.body.appendChild(backdrop);
+      }
+      document.body.style.overflow = 'hidden';
+    } catch (err) {
+      console.warn('customModal.show error', err);
+    }
+  },
+  hide: function(modalId) {
+    try {
+      const modalElement = document.getElementById(modalId);
+      if (!modalElement) { console.warn('modal element not found', modalId); return; }
+      modalElement.style.display = 'none';
+      // Remove backdrop
+      const backdrop = document.querySelector('.modal-backdrop');
+      if (backdrop) backdrop.remove();
+      document.body.style.overflow = 'auto';
+    } catch (err) {
+      console.warn('customModal.hide error', err);
+    }
+  }
+};

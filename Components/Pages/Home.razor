@@ -376,9 +376,9 @@
                                         var commentCount = GetComments(resto.Nom).Count;
                                         var badgeClass = commentCount > 0 ? "bg-warning" : "bg-secondary";
                                     }
-                                    <button type="button" class="btn btn-sm w-100 mb-2 @(AreCommentsExpanded(resto.Nom) ? "btn-warning" : "btn-outline-secondary")" @onclick="async () => await ChargerCommentaires(resto.Nom)">
-                                        <i class="bi @(AreCommentsExpanded(resto.Nom) ? "bi-chevron-up" : "bi-chevron-down")"></i>
-                                        <span>@(AreCommentsExpanded(resto.Nom) ? "Masquer" : "Voir") les commentaires</span>
+                                    <button type="button" class="btn btn-sm w-100 mb-2 @(AreCommentsExpanded(resto.Nom) ? "btn-warning" : "btn-outline-secondary")" @onclick="async () => await ChargerCommentaires(resto.Nom)" aria-label="Afficher les commentaires">
+                                        <i class="bi bi-chat-left-text"></i>
+                                        <span>Afficher les commentaires</span>
                                         <span class="badge @badgeClass ms-2">@commentCount</span>
                                     </button>
 
@@ -421,7 +421,7 @@
                                                                     <button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => CommencerEditionCommentaire(comment)" title="Éditer">
                                                                         <i class="bi bi-pencil"></i>
                                                                     </button>
-                                                                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="async () => await SupprimerCommentaire(resto.Nom, comment)" title="Supprimer">
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="async () => await SupprimerCommentaireAvecConfirmation(resto.Nom, comment)" title="Supprimer">
                                                                         <i class="bi bi-trash"></i>
                                                                     </button>
                                                                 </div>
@@ -433,7 +433,7 @@
                                         </div>
 
                                         <!-- Formulaire d'ajout de commentaire -->
-                                        <button type="button" class="btn btn-success btn-sm w-100 mb-2" @onclick="() => ToggleCommentForm(resto.Nom)">
+                                        <button type="button" class="btn btn-success btn-sm w-100 mb-2" @onclick="() => ToggleCommentForm(resto.Nom)" aria-label="Ajouter un commentaire">
                                             <i class="bi bi-plus-lg"></i> Ajouter un commentaire
                                         </button>
 
@@ -454,12 +454,12 @@
                                     }
                                 </div>
 
-                                <div class="btn-group w-100" role="group">
-                                    <button type="button" class="btn btn-outline-warning btn-sm" @onclick="() => CommencerEdition(resto)">
-                                        <i class="bi bi-pencil"></i> Éditer
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button type="button" class="icon-btn" @onclick="() => CommencerEdition(resto)" title="Éditer le restaurant">
+                                        <img src="images/editIcon.png" alt="Éditer" />
                                     </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick="async () => await SupprimerRestaurant(resto)">
-                                        <i class="bi bi-trash"></i> Supprimer
+                                    <button type="button" class="icon-btn" @onclick="async () => await SupprimerRestaurantAvecConfirmation(resto)" title="Supprimer le restaurant">
+                                        <img src="images/removeIcon.png" alt="Supprimer" />
                                     </button>
                                 </div>
                             </div>
@@ -560,9 +560,9 @@
                                         var commentCount = GetComments(resto.Nom).Count;
                                         var badgeClass = commentCount > 0 ? "bg-warning" : "bg-secondary";
                                     }
-                                    <button type="button" class="btn btn-sm w-100 mb-2 @(AreCommentsExpanded(resto.Nom) ? "btn-warning" : "btn-outline-secondary")" @onclick="async () => await ChargerCommentaires(resto.Nom)">
-                                        <i class="bi @(AreCommentsExpanded(resto.Nom) ? "bi-chevron-up" : "bi-chevron-down")"></i>
-                                        <span>@(AreCommentsExpanded(resto.Nom) ? "Masquer" : "Voir") les commentaires</span>
+                                    <button type="button" class="btn btn-sm w-100 mb-2 @(AreCommentsExpanded(resto.Nom) ? "btn-warning" : "btn-outline-secondary")" @onclick="async () => await ChargerCommentaires(resto.Nom)" aria-label="Afficher les commentaires">
+                                        <i class="bi bi-chat-left-text"></i>
+                                        <span>Afficher les commentaires</span>
                                         <span class="badge @badgeClass ms-2">@commentCount</span>
                                     </button>
 
@@ -605,7 +605,7 @@
                                                                     <button type="button" class="btn btn-sm btn-outline-warning" @onclick="() => CommencerEditionCommentaire(comment)" title="Éditer">
                                                                         <i class="bi bi-pencil"></i>
                                                                     </button>
-                                                                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="async () => await SupprimerCommentaire(resto.Nom, comment)" title="Supprimer">
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger" @onclick="async () => await SupprimerCommentaireAvecConfirmation(resto.Nom, comment)" title="Supprimer">
                                                                         <i class="bi bi-trash"></i>
                                                                     </button>
                                                                 </div>
@@ -637,18 +637,37 @@
                                     }
                                 </div>
 
-                                <div class="btn-group w-100" role="group">
-                                    <button type="button" class="btn btn-outline-warning btn-sm" @onclick="() => CommencerEdition(resto)">
-                                        <i class="bi bi-pencil"></i> Éditer
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button type="button" class="icon-btn" @onclick="() => CommencerEdition(resto)" title="Éditer le restaurant">
+                                        <img src="images/editIcon.png" alt="Éditer" />
                                     </button>
-                                    <button type="button" class="btn btn-outline-danger btn-sm" @onclick="async () => await SupprimerRestaurant(resto)">
-                                        <i class="bi bi-trash"></i> Supprimer
+                                    <button type="button" class="icon-btn" @onclick="async () => await SupprimerRestaurantAvecConfirmation(resto)" title="Supprimer le restaurant">
+                                        <img src="images/removeIcon.png" alt="Supprimer" />
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmation personnalisée -->
+<div class="modal" id="confirmationModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmation</h5>
+                <button type="button" class="btn-close" @onclick="CancelConfirmation" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                @confirmationMessage
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="CancelConfirmation">Annuler</button>
+                <button type="button" class="btn btn-danger" @onclick="ConfirmAction">Supprimer</button>
             </div>
         </div>
     </div>
@@ -682,6 +701,13 @@
     // Variables pour l'édition des commentaires
     private int? editingCommentId = null;
     private string editingCommentText = string.Empty;
+
+    // Variables pour la modal de confirmation
+    private string confirmationMessage = string.Empty;
+    private string pendingActionType = string.Empty; // "delete_restaurant" ou "delete_comment"
+    private Restaurant? pendingRestaurant = null;
+    private string? pendingCommentRestaurantNom = null;
+    private Comment? pendingComment = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -880,6 +906,56 @@
         {
             messageErreur = $"Erreur: {ex.Message}";
         }
+    }
+
+    private async Task SupprimerRestaurantAvecConfirmation(Restaurant resto)
+    {
+        confirmationMessage = $"Êtes-vous sûr de vouloir supprimer '{resto.Nom}' ?";
+        pendingActionType = "delete_restaurant";
+        pendingRestaurant = resto;
+        await ShowConfirmationModal();
+    }
+
+    private async Task SupprimerCommentaireAvecConfirmation(string restaurantNom, Comment comment)
+    {
+        confirmationMessage = "Êtes-vous sûr de vouloir supprimer ce commentaire ?";
+        pendingActionType = "delete_comment";
+        pendingCommentRestaurantNom = restaurantNom;
+        pendingComment = comment;
+        await ShowConfirmationModal();
+    }
+
+    private async Task ShowConfirmationModal()
+    {
+        await JS.InvokeVoidAsync("customModal.show", "confirmationModal");
+    }
+
+    private async Task ConfirmAction()
+    {
+        await JS.InvokeVoidAsync("customModal.hide", "confirmationModal");
+        
+        if (pendingActionType == "delete_restaurant" && pendingRestaurant != null)
+        {
+            await SupprimerRestaurant(pendingRestaurant);
+            pendingRestaurant = null;
+        }
+        else if (pendingActionType == "delete_comment" && pendingComment != null && pendingCommentRestaurantNom != null)
+        {
+            await SupprimerCommentaire(pendingCommentRestaurantNom, pendingComment);
+            pendingComment = null;
+            pendingCommentRestaurantNom = null;
+        }
+        
+        pendingActionType = string.Empty;
+    }
+
+    private async Task CancelConfirmation()
+    {
+        await JS.InvokeVoidAsync("customModal.hide", "confirmationModal");
+        pendingActionType = string.Empty;
+        pendingRestaurant = null;
+        pendingComment = null;
+        pendingCommentRestaurantNom = null;
     }
 
     private async Task AjouterLeRestaurant()
