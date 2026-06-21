@@ -100,6 +100,12 @@ public class SupabaseService
                         if (el.TryGetProperty("food", out var foodEl) && foodEl.ValueKind != JsonValueKind.Null)
                             resto.Food = ParseJsonStringOrArray(foodEl);
 
+                        if (el.TryGetProperty("rating", out var ratingEl) && ratingEl.ValueKind == JsonValueKind.Number)
+                            resto.Rating = ratingEl.GetInt32();
+
+                        if (el.TryGetProperty("price_level", out var priceLevelEl) && priceLevelEl.ValueKind == JsonValueKind.Number)
+                            resto.PriceLevel = priceLevelEl.GetInt32();
+
                         restaurants.Add(resto);
                         idx++;
                     }
@@ -130,7 +136,9 @@ public class SupabaseService
                 lien_commande = string.IsNullOrWhiteSpace(restaurant.LienCommande) ? null : restaurant.LienCommande,
                 restaurant_type = string.IsNullOrWhiteSpace(restaurant.RestaurantType) ? null : new[] { restaurant.RestaurantType },
                 ville = string.IsNullOrWhiteSpace(restaurant.Ville) ? null : restaurant.Ville,
-                food = string.IsNullOrWhiteSpace(restaurant.Food) ? null : new[] { restaurant.Food }
+                food = string.IsNullOrWhiteSpace(restaurant.Food) ? null : new[] { restaurant.Food },
+                rating = restaurant.Rating,
+                price_level = restaurant.PriceLevel
             });
 
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
@@ -156,7 +164,7 @@ public class SupabaseService
         }
     }
 
-    public async Task<bool> UpdateRestaurantAsync(Restaurant restaurant)
+    public async Task<bool> UpdateRestaurantAsync(Restaurant restaurant, string? originalNom = null)
     {
         try
         {
@@ -171,11 +179,13 @@ public class SupabaseService
                 lien_commande = string.IsNullOrWhiteSpace(restaurant.LienCommande) ? null : restaurant.LienCommande,
                 restaurant_type = string.IsNullOrWhiteSpace(restaurant.RestaurantType) ? null : new[] { restaurant.RestaurantType },
                 ville = string.IsNullOrWhiteSpace(restaurant.Ville) ? null : restaurant.Ville,
-                food = string.IsNullOrWhiteSpace(restaurant.Food) ? null : new[] { restaurant.Food }
+                food = string.IsNullOrWhiteSpace(restaurant.Food) ? null : new[] { restaurant.Food },
+                rating = restaurant.Rating,
+                price_level = restaurant.PriceLevel
             });
 
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-            var nomFilter = Uri.EscapeDataString(restaurant.Nom ?? "");
+            var nomFilter = Uri.EscapeDataString(originalNom ?? restaurant.Nom ?? "");
             var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{_url}/rest/v1/restaurants?nom=eq.{nomFilter}")
             {
                 Content = content

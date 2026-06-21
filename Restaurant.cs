@@ -45,6 +45,12 @@ public class Restaurant
     [JsonPropertyName("food")]
     public string Food { get; set; } = string.Empty;
 
+    [JsonPropertyName("rating")]
+    public int? Rating { get; set; }
+
+    [JsonPropertyName("price_level")]
+    public int? PriceLevel { get; set; }
+
     [JsonPropertyName("created_at")]
     public DateTime? CreatedAt { get; set; }
 }
