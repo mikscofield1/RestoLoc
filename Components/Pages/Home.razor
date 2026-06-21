@@ -132,69 +132,45 @@
         <div id="editRestaurantForm" class="card p-3 mb-5 border-warning shadow-sm">
             <h5 class="card-title text-warning"><i class="bi bi-pencil-fill"></i> Éditer le restaurant</h5>
             <div class="row g-3 mb-2">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label fw-bold small text-warning">Nom du restaurant</label>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold small text-warning">Téléphone</label>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold small text-warning">Origine Poulet</label>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold small text-warning">Origine Viande</label>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold small text-warning">Type</label>
-                </div>
-            </div>
-            <div class="row g-3">
-                <div class="col-md-3">
                     <input type="text" @bind="restoEnEdition.Nom" class="form-control form-control-sm" placeholder="Nom du restaurant" />
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-bold small text-warning">Téléphone</label>
                     <input type="text" @bind="restoEnEdition.Telephone" class="form-control form-control-sm" placeholder="Téléphone" />
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-bold small text-warning">Origine Poulet</label>
                     <input type="text" @bind="restoEnEdition.OriginePoulet" class="form-control form-control-sm" placeholder="Origine Poulet" />
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-bold small text-warning">Origine Viande</label>
                     <input type="text" @bind="restoEnEdition.OrigineViande" class="form-control form-control-sm" placeholder="Origine Viande" />
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
+                    <label class="form-label fw-bold small text-warning">Type</label>
                     <select @bind="restoEnEdition.Type" class="form-select form-select-sm">
                         <option value="@TypeRestaurant.Physique">Boutique Physique</option>
                         <option value="@TypeRestaurant.EnLigne">Commande En Ligne Only</option>
                     </select>
                 </div>
-                <div class="col-12"></div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold small text-warning">Type Restaurant</label>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold small text-warning">Ville</label>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold small text-warning">Type Nourriture</label>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold small text-warning">Note</label>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold small text-warning">Prix</label>
-                </div>
             </div>
-            <div class="row g-3">
-                <div class="col-md-2">
+            <div class="row g-3 mb-2">
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-bold small text-warning">Type Restaurant</label>
                     <input type="text" @bind="restoEnEdition.RestaurantType" class="form-control form-control-sm" placeholder="Type Restaurant" />
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-bold small text-warning">Ville</label>
                     <input type="text" @bind="restoEnEdition.Ville" class="form-control form-control-sm" placeholder="Ville" />
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-bold small text-warning">Type Nourriture</label>
                     <input type="text" @bind="restoEnEdition.Food" class="form-control form-control-sm" placeholder="Type Nourriture" />
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-bold small text-warning">Note</label>
                     <select @bind="restoEnEdition.Rating" class="form-select form-select-sm">
                         <option value="">Note (étoiles)</option>
                         <option value="1">★ 1</option>
@@ -204,7 +180,8 @@
                         <option value="5">★★★★★ 5</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2">
+                    <label class="form-label fw-bold small text-warning">Prix</label>
                     <select @bind="restoEnEdition.PriceLevel" class="form-select form-select-sm">
                         <option value="">Prix</option>
                         <option value="1">$</option>
@@ -212,7 +189,8 @@
                         <option value="3">$$$</option>
                     </select>
                 </div>
-                <div class="col-12"></div>
+            </div>
+            <div class="row g-3">
                 @if (restoEnEdition.Type == TypeRestaurant.Physique)
                 {
                     <div class="col-md-8">
@@ -1049,7 +1027,9 @@
                     // Réinitialisation
                     nouveauResto = new Restaurant();
                     urlGoogleMaps = string.Empty;
-                    await ChargerRestaurants();
+                        await ChargerRestaurants();
+                        // Ferme le panneau d'ajout après succès
+                        showAddForm = false;
                 }
                 else
                 {
