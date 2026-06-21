@@ -236,3 +236,21 @@ article.content {
     object-fit: contain;
     object-position: center;
 }
+
+/* Restaurant icons (map / online) - unified sizing */
+.resto-icon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.resto-icon img {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Add left padding between the small info fields to avoid them sticking to the left */
+

@@ -296,38 +296,36 @@
                     <div class="col">
                         <div class="card shadow-sm border-0 bg-light">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between mb-2">
-                                    <div>
-                                        <h5 class="fw-bold mb-1">@resto.Nom</h5>
-                                        <div class="d-flex gap-2 align-items-center">
-                                            @if (resto.Rating.HasValue)
-                                            {
-                                                <span class="small text-warning">@RenderStars(resto.Rating.Value)</span>
-                                            }
-                                            @if (resto.PriceLevel.HasValue)
-                                            {
-                                                <span class="small text-success">@RenderPriceLevel(resto.PriceLevel.Value)</span>
-                                            }
-                                        </div>
-                                    </div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="fw-bold mb-1">@resto.Nom</h5>
                                     <span class="badge @(resto.EstFiable ? "bg-success" : "bg-danger")">
                                         @(resto.EstFiable ? "Fiable" : "Non Fiable")
                                     </span>
+                                </div>
+                                <div class="d-flex gap-2 align-items-center mb-2">
+                                    @if (resto.Rating.HasValue)
+                                    {
+                                        <span class="small text-warning">@RenderStars(resto.Rating.Value)</span>
+                                    }
+                                    @if (resto.PriceLevel.HasValue)
+                                    {
+                                        <span class="small text-success">@RenderPriceLevel(resto.PriceLevel.Value)</span>
+                                    }
                                 </div>
                                 @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet) || !string.IsNullOrWhiteSpace(resto.OrigineViande))
                                 {
                                     <p class="small mb-1">
                                         @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet))
                                         {
-                                            <span>🍗 Poulet : @resto.OriginePoulet</span>
+                                            <span class="me-3">🍗 @resto.OriginePoulet</span>
                                         }
                                         @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet) && !string.IsNullOrWhiteSpace(resto.OrigineViande))
                                         {
-                                            <span> | </span>
+                                            @* separator removed *@
                                         }
                                         @if (!string.IsNullOrWhiteSpace(resto.OrigineViande))
                                         {
-                                            <span>🥩 Viande : @resto.OrigineViande</span>
+                                            <span>🥩 @resto.OrigineViande</span>
                                         }
                                     </p>
                                 }
@@ -336,33 +334,42 @@
                                     <p class="small mb-1">
                                         @if (!string.IsNullOrWhiteSpace(resto.Ville))
                                         {
-                                            <span>📍 <strong>@resto.Ville</strong></span>
+                                            <span class="me-3">📍 <strong>@resto.Ville</strong></span>
                                         }
                                         @if (!string.IsNullOrWhiteSpace(resto.Ville) && !string.IsNullOrWhiteSpace(resto.RestaurantType))
                                         {
-                                            <span> | </span>
+                                            @* separator removed *@
                                         }
                                         @if (!string.IsNullOrWhiteSpace(resto.RestaurantType))
                                         {
-                                            <span>🏢 Type : @resto.RestaurantType</span>
+                                            <span>🏷️ @resto.RestaurantType</span>
                                         }
                                     </p>
                                 }
                                 @if (!string.IsNullOrWhiteSpace(resto.Food))
                                 {
-                                    <p class="small mb-1">🍽️ Nourriture : @resto.Food</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <p class="small mb-0 text-truncate me-2" style="min-width:0;">🍽️ @resto.Food</p>
+                                        @if (!string.IsNullOrWhiteSpace(resto.LienCommande))
+                                        {
+                                            <a href="@resto.LienCommande" target="_blank" rel="noopener noreferrer" class="resto-icon rounded-circle border border-2 border-primary shadow-sm bg-white" title="Ouvrir sur Google Maps">
+                                                <img src="images/googlemapslogo.png" alt="Google Maps" />
+                                            </a>
+                                        }
+                                    </div>
                                 }
-                                @if (!string.IsNullOrWhiteSpace(resto.Telephone))
+                                else if (!string.IsNullOrWhiteSpace(resto.LienCommande))
                                 {
-                                    <p class="small mb-2">📞 Tél : <a href="tel:@resto.Telephone">@resto.Telephone</a></p>
+                                    <div class="d-flex justify-content-end mb-2">
+                                        <a href="@resto.LienCommande" target="_blank" rel="noopener noreferrer" class="resto-icon rounded-circle border border-2 border-primary shadow-sm bg-white" title="Ouvrir sur Google Maps">
+                                            <img src="images/googlemapslogo.png" alt="Google Maps" />
+                                        </a>
+                                    </div>
                                 }
-                                @if (!string.IsNullOrWhiteSpace(resto.LienCommande))
+                                else if (!string.IsNullOrWhiteSpace(resto.Telephone))
                                 {
-                                    <a href="@resto.LienCommande" target="_blank" class="btn btn-outline-primary btn-sm w-100 mb-2">
-                                        <i class="bi bi-geo-alt-fill"></i> Ouvrir sur Google Maps
-                                    </a>
+                                    <p class="small mb-1">📞 <a href="tel:@resto.Telephone" class="text-decoration-none">@resto.Telephone</a></p>
                                 }
-                                
                                 <!-- Section Commentaires -->
                                 <div class="border-top pt-3 mt-3">
                                     @{
@@ -493,15 +500,15 @@
                                     <p class="small mb-1">
                                         @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet))
                                         {
-                                            <span>🍗 Poulet : @resto.OriginePoulet</span>
+                                            <span class="me-3">🍗 @resto.OriginePoulet</span>
                                         }
                                         @if (!string.IsNullOrWhiteSpace(resto.OriginePoulet) && !string.IsNullOrWhiteSpace(resto.OrigineViande))
                                         {
-                                            <span> | </span>
+                                            @* separator removed *@
                                         }
                                         @if (!string.IsNullOrWhiteSpace(resto.OrigineViande))
                                         {
-                                            <span>🥩 Viande : @resto.OrigineViande</span>
+                                            <span>🥩 @resto.OrigineViande</span>
                                         }
                                     </p>
                                 }
@@ -510,27 +517,41 @@
                                     <p class="small mb-1">
                                         @if (!string.IsNullOrWhiteSpace(resto.Ville))
                                         {
-                                            <span>📍 <strong>@resto.Ville</strong></span>
+                                            <span class="me-3">📍 <strong>@resto.Ville</strong></span>
                                         }
                                         @if (!string.IsNullOrWhiteSpace(resto.Ville) && !string.IsNullOrWhiteSpace(resto.RestaurantType))
                                         {
-                                            <span> | </span>
+                                            @* separator removed *@
                                         }
                                         @if (!string.IsNullOrWhiteSpace(resto.RestaurantType))
                                         {
-                                            <span>🏢 Type : @resto.RestaurantType</span>
+                                            <span>🏷️ @resto.RestaurantType</span>
                                         }
                                     </p>
                                 }
                                 @if (!string.IsNullOrWhiteSpace(resto.Food))
                                 {
-                                    <p class="small mb-1">🍽️ Nourriture : @resto.Food</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <p class="small mb-0 text-truncate me-2" style="min-width:0;">🍽️ @resto.Food</p>
+                                        @if (!string.IsNullOrWhiteSpace(resto.LienCommande))
+                                        {
+                                            <a href="@resto.LienCommande" target="_blank" rel="noopener noreferrer" class="resto-icon rounded-circle border border-2 border-warning shadow-sm bg-white" aria-label="Commander en ligne">
+                                                <img src="images/OnlineRestaurant.png" alt="Commander en ligne" />
+                                            </a>
+                                        }
+                                    </div>
                                 }
-                                @if (!string.IsNullOrWhiteSpace(resto.LienCommande))
+                                else if (!string.IsNullOrWhiteSpace(resto.LienCommande))
                                 {
-                                    <a href="@resto.LienCommande" target="_blank" class="btn btn-warning btn-sm w-100 mb-2 text-dark fw-bold">
-                                        <i class="bi bi-cart-fill"></i> Commander en ligne
-                                    </a>
+                                    <div class="d-flex justify-content-end mb-2">
+                                        <a href="@resto.LienCommande" target="_blank" rel="noopener noreferrer" class="resto-icon rounded-circle border border-2 border-warning shadow-sm bg-white" aria-label="Commander en ligne">
+                                            <img src="images/OnlineRestaurant.png" alt="Commander en ligne" />
+                                        </a>
+                                    </div>
+                                }
+                                else if (!string.IsNullOrWhiteSpace(resto.Telephone))
+                                {
+                                    <p class="small mb-1">📞 <a href="tel:@resto.Telephone" class="text-decoration-none">@resto.Telephone</a></p>
                                 }
 
                                 <!-- Section Commentaires -->
