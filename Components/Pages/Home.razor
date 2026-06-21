@@ -24,6 +24,16 @@
 <audio id="jingleAudio" src="audio/mahalal.mp3" preload="none"></audio>
 
 <div class="container mt-4">
+    @if (isLoading)
+    {
+        <div class="restaurant-loading-bar mb-4" role="status" aria-live="polite">
+            <span class="restaurant-loading-bar__icon">🍜</span>
+            <span class="restaurant-loading-bar__label">@loadingMessage</span>
+            <span class="restaurant-loading-bar__track">
+                <span class="restaurant-loading-bar__fill"></span>
+            </span>
+        </div>
+    }
 
     <!-- Section Ajouter/Éditer -->
     @if (restoEnEdition == null)
@@ -711,6 +721,8 @@
 
     // Scroll to edit form after render
     private bool shouldScrollToEditForm = false;
+    private bool isLoading = false;
+    private string loadingMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -882,43 +894,49 @@
             return;
         }
 
-        try
+        await RunWithLoading("Enregistrement du restaurant en cours…", async () =>
         {
-            var success = await SupabaseService.UpdateRestaurantAsync(restoEnEdition, originalRestaurantNom);
-            if (success)
+            try
             {
-                restoEnEdition = null;
-                await ChargerRestaurants();
+                var success = await SupabaseService.UpdateRestaurantAsync(restoEnEdition, originalRestaurantNom);
+                if (success)
+                {
+                    restoEnEdition = null;
+                    await ChargerRestaurants();
+                }
+                else
+                {
+                    messageErreur = "Erreur lors de la mise à jour du restaurant.";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                messageErreur = "Erreur lors de la mise à jour du restaurant.";
+                messageErreur = $"Erreur: {ex.Message}";
             }
-        }
-        catch (Exception ex)
-        {
-            messageErreur = $"Erreur: {ex.Message}";
-        }
+        });
     }
 
     private async Task SupprimerRestaurant(Restaurant resto)
     {
-        try
+        await RunWithLoading("Suppression du restaurant en cours…", async () =>
         {
-            var success = await SupabaseService.DeleteRestaurantAsync(resto.Nom);
-            if (success)
+            try
             {
-                await ChargerRestaurants();
+                var success = await SupabaseService.DeleteRestaurantAsync(resto.Nom);
+                if (success)
+                {
+                    await ChargerRestaurants();
+                }
+                else
+                {
+                    messageErreur = "Erreur lors de la suppression du restaurant.";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                messageErreur = "Erreur lors de la suppression du restaurant.";
+                messageErreur = $"Erreur: {ex.Message}";
             }
-        }
-        catch (Exception ex)
-        {
-            messageErreur = $"Erreur: {ex.Message}";
-        }
+        });
     }
 
     private async Task SupprimerRestaurantAvecConfirmation(Restaurant resto)
@@ -960,6 +978,21 @@
         }
         
         pendingActionType = string.Empty;
+    }
+
+    private async Task RunWithLoading(string message, Func<Task> action)
+    {
+        isLoading = true;
+        loadingMessage = message;
+        StateHasChanged();
+
+        var minDisplay = Task.Delay(400);
+        await action();
+        await minDisplay;
+
+        isLoading = false;
+        loadingMessage = string.Empty;
+        StateHasChanged();
     }
 
     private async Task CancelConfirmation()
@@ -1008,18 +1041,21 @@
 
         try
         {
-            var success = await SupabaseService.AddRestaurantAsync(nouveauResto);
-            if (success)
+            await RunWithLoading("Ajout du restaurant en cours…", async () =>
             {
-                // Réinitialisation
-                nouveauResto = new Restaurant();
-                urlGoogleMaps = string.Empty;
-                await ChargerRestaurants();
-            }
-            else
-            {
-                messageErreur = "Erreur lors de l'ajout du restaurant.";
-            }
+                var success = await SupabaseService.AddRestaurantAsync(nouveauResto);
+                if (success)
+                {
+                    // Réinitialisation
+                    nouveauResto = new Restaurant();
+                    urlGoogleMaps = string.Empty;
+                    await ChargerRestaurants();
+                }
+                else
+                {
+                    messageErreur = "Erreur lors de l'ajout du restaurant.";
+                }
+            });
         }
         catch (Exception ex)
         {
@@ -1074,19 +1110,22 @@
 
     private async Task SupprimerCommentaire(string restaurantNom, Comment comment)
     {
-        try
+        await RunWithLoading("Suppression du commentaire en cours…", async () =>
         {
-            var success = await SupabaseService.DeleteCommentAsync(comment.Id);
-            if (success)
+            try
             {
-                // Recharger les commentaires
-                commentsCache[restaurantNom] = await SupabaseService.GetCommentsByRestaurantAsync(restaurantNom);
+                var success = await SupabaseService.DeleteCommentAsync(comment.Id);
+                if (success)
+                {
+                    // Recharger les commentaires
+                    commentsCache[restaurantNom] = await SupabaseService.GetCommentsByRestaurantAsync(restaurantNom);
+                }
             }
-        }
-        catch (Exception ex)
-        {
-            messageErreur = $"Erreur lors de la suppression du commentaire: {ex.Message}";
-        }
+            catch (Exception ex)
+            {
+                messageErreur = $"Erreur lors de la suppression du commentaire: {ex.Message}";
+            }
+        });
     }
 
     private bool AreCommentsLoaded(string restaurantNom)

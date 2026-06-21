@@ -101,5 +101,5 @@ C:\Users\Admin\RestoLoc\obj\Debug\net10.0\RestoLoc.pdb
 C:\Users\Admin\RestoLoc\obj\Debug\net10.0\RestoLoc.genruntimeconfig.cache
 C:\Users\Admin\RestoLoc\obj\Debug\net10.0\ref\RestoLoc.dll
 C:\Users\Admin\RestoLoc\bin\Debug\net10.0\RestoLoc.exe
-C:\Users\Admin\RestoLoc\obj\Debug\net10.0\compressed\8qksu4obxj-{0}-y9y5dnoigv-y9y5dnoigv.gz
 C:\Users\Admin\RestoLoc\obj\Debug\net10.0\compressed\vhm8d4exou-{0}-3cbffrv29t-3cbffrv29t.gz
+C:\Users\Admin\RestoLoc\obj\Debug\net10.0\compressed\8qksu4obxj-{0}-og0eyndnvk-og0eyndnvk.gz
