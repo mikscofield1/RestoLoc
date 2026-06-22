@@ -237,40 +237,114 @@
 
     <div class="card p-3 mb-5 border-secondary shadow-sm">
         <h5 class="card-title text-secondary"><i class="bi bi-funnel"></i> Filtrer les restaurants</h5>
-        <div class="row g-3 mb-3">
-            <div class="col-12 col-md-3">
+        <div class="row g-2 mb-3">
+            <div class="col-12 col-md-2">
                 <input type="text" @bind="searchText" class="form-control form-control-sm" placeholder="Recherche texte..." />
             </div>
+
+            <div class="col-12 col-md-1">
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddType" data-bs-toggle="dropdown" aria-expanded="false">Type</button>
+                    <ul class="dropdown-menu p-2" aria-labelledby="ddType">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="typePhysique" @onchange="e => ToggleTypeSelection(TypeRestaurant.Physique, ((ChangeEventArgs)e).Value)" checked="@SelectedTypes.Contains(TypeRestaurant.Physique)" />
+                            <label class="form-check-label small" for="typePhysique">Physique</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="typeEnLigne" @onchange="e => ToggleTypeSelection(TypeRestaurant.EnLigne, ((ChangeEventArgs)e).Value)" checked="@SelectedTypes.Contains(TypeRestaurant.EnLigne)" />
+                            <label class="form-check-label small" for="typeEnLigne">En ligne</label>
+                        </div>
+                    </ul>
+                </div>
+            </div>
+
             <div class="col-12 col-md-2">
-                <select @bind="searchType" class="form-select form-select-sm">
-                    <option value="">Tous types</option>
-                    <option value="Physique">Physique</option>
-                    <option value="EnLigne">En ligne</option>
-                </select>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddRestaurantType" data-bs-toggle="dropdown" aria-expanded="false">Type resto</button>
+                    <div class="dropdown-menu p-2" aria-labelledby="ddRestaurantType" style="max-height:200px; overflow:auto; min-width:220px">
+                        @foreach (var type in RestaurantTypeOptions)
+                        {
+                            var id = $"rt_{type.Replace(' ', '_')}";
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="@id" @onchange="e => ToggleRestaurantType(type, ((ChangeEventArgs)e).Value)" checked="@SelectedRestaurantTypes.Contains(type)" />
+                                <label class="form-check-label small" for="@id">@type</label>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
-            <div class="col-12 col-md-3">
-                <select @bind="searchRestaurantType" class="form-select form-select-sm">
-                    <option value="">Tous types restaurant</option>
-                    @foreach (var type in RestaurantTypeOptions)
-                    {
-                        <option value="@type">@type</option>
-                    }
-                </select>
+
+            <div class="col-12 col-md-1">
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddVille" data-bs-toggle="dropdown" aria-expanded="false">Ville</button>
+                    <div class="dropdown-menu p-2" aria-labelledby="ddVille" style="max-height:200px; overflow:auto; min-width:220px">
+                        @foreach (var ville in VilleOptions)
+                        {
+                            var idv = $"v_{ville.Replace(' ', '_')}";
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="@idv" @onchange="e => ToggleVille(ville, ((ChangeEventArgs)e).Value)" checked="@SelectedVilles.Contains(ville)" />
+                                <label class="form-check-label small" for="@idv">@ville</label>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
+
             <div class="col-12 col-md-2">
-                <select @bind="searchVille" class="form-select form-select-sm">
-                    <option value="">Toutes villes</option>
-                    @foreach (var ville in VilleOptions)
-                    {
-                        <option value="@ville">@ville</option>
-                    }
-                </select>
+                <div class="d-flex gap-1">
+                    <div class="dropdown flex-grow-1">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddRating" data-bs-toggle="dropdown" aria-expanded="false">Note</button>
+                        <ul class="dropdown-menu p-2" aria-labelledby="ddRating">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                var idr = $"r_{i}";
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="@idr" @onchange="e => ToggleRating(i, ((ChangeEventArgs)e).Value)" checked="@SelectedRatings.Contains(i)" />
+                                    <label class="form-check-label small" for="@idr">@RenderStars(i)</label>
+                                </div>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="dropdown flex-grow-1">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddPrice" data-bs-toggle="dropdown" aria-expanded="false">Prix</button>
+                        <ul class="dropdown-menu p-2" aria-labelledby="ddPrice">
+                            @for (int p = 1; p <= 3; p++)
+                            {
+                                var idp = $"p_{p}";
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="@idp" @onchange="e => TogglePrice(p, ((ChangeEventArgs)e).Value)" checked="@SelectedPrices.Contains(p)" />
+                                    <label class="form-check-label small" for="@idp">@RenderPriceLevel(p)</label>
+                                </div>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="dropdown flex-grow-1">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddFiable" data-bs-toggle="dropdown" aria-expanded="false">Fiable</button>
+                        <ul class="dropdown-menu p-2" aria-labelledby="ddFiable">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="fiableTrue" @onchange="e => { FilterShowFiable = (bool)e.Value; ToggleFiableState(); }" checked="@FilterShowFiable" />
+                                <label class="form-check-label small" for="fiableTrue">✅ Fiable</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="fiableFalse" @onchange="e => { FilterShowNonFiable = (bool)e.Value; ToggleFiableState(); }" checked="@FilterShowNonFiable" />
+                                <label class="form-check-label small" for="fiableFalse">❌ Non fiable</label>
+                            </div>
+                        </ul>
+                    </div>
+                </div>
             </div>
-            <div class="col-6 col-md-1 d-grid">
-                <button class="btn btn-outline-primary btn-sm" @onclick="ApplyFilter">Appliquer</button>
-            </div>
-            <div class="col-6 col-md-1 d-grid">
-                <button class="btn btn-outline-secondary btn-sm" @onclick="ResetFilter">Réinitialiser</button>
+
+            <div class="col-12">
+                <div class="row g-2">
+                    <div class="col-6 col-md-2">
+                        <button class="btn btn-outline-primary btn-sm w-100" @onclick="ApplyFilter">Appliquer</button>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <button class="btn btn-outline-secondary btn-sm w-100" @onclick="ResetFilter">Réinitialiser</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -666,6 +740,14 @@
     private string searchType = string.Empty;
     private string searchRestaurantType = string.Empty;
     private string searchVille = string.Empty;
+    // Multi-select filters
+    private HashSet<TypeRestaurant> SelectedTypes = new() { TypeRestaurant.Physique, TypeRestaurant.EnLigne };
+    private HashSet<string> SelectedRestaurantTypes = new(StringComparer.OrdinalIgnoreCase);
+    private HashSet<string> SelectedVilles = new(StringComparer.OrdinalIgnoreCase);
+    private HashSet<int> SelectedRatings = new();
+    private HashSet<int> SelectedPrices = new();
+    private bool FilterShowFiable = true;
+    private bool FilterShowNonFiable = false;
     private List<string> RestaurantTypeOptions = new();
     private List<string> VilleOptions = new();
     private string urlGoogleMaps = string.Empty;
@@ -801,21 +883,35 @@
     private void ApplyFilter()
     {
         var text = searchText?.Trim().ToLowerInvariant() ?? string.Empty;
-
         FilteredRestaurants = ListeRestaurants.Where(r =>
-            (string.IsNullOrEmpty(text) ||
+        {
+            // Chercher dans les propriétés du restaurant
+            var matchRestaurant = string.IsNullOrEmpty(text) ||
                 (r.Nom?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
                 (r.Telephone?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
                 (r.OriginePoulet?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
                 (r.OrigineViande?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
                 (r.RestaurantType?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
                 (r.Food?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
-                (r.LienCommande?.Contains(text, StringComparison.OrdinalIgnoreCase) == true)
-            ) &&
-            (string.IsNullOrEmpty(searchType) || r.Type.ToString() == searchType) &&
-            (string.IsNullOrEmpty(searchRestaurantType) || r.RestaurantType == searchRestaurantType) &&
-            (string.IsNullOrEmpty(searchVille) || r.Ville == searchVille)
-        ).ToList();
+                (r.LienCommande?.Contains(text, StringComparison.OrdinalIgnoreCase) == true);
+
+            // Chercher dans les commentaires
+            var matchComments = false;
+            if (!string.IsNullOrEmpty(text) && commentsCache.ContainsKey(r.Nom))
+            {
+                matchComments = commentsCache[r.Nom].Any(c => 
+                    c.Texte?.Contains(text, StringComparison.OrdinalIgnoreCase) == true);
+            }
+
+            return (matchRestaurant || matchComments) &&
+                (SelectedTypes.Count == 0 || SelectedTypes.Contains(r.Type)) &&
+                (SelectedRestaurantTypes.Count == 0 || SelectedRestaurantTypes.Contains(r.RestaurantType ?? string.Empty)) &&
+                (SelectedVilles.Count == 0 || SelectedVilles.Contains(r.Ville ?? string.Empty)) &&
+                (SelectedRatings.Count == 0 || (r.Rating.HasValue && SelectedRatings.Contains(r.Rating.Value))) &&
+                (SelectedPrices.Count == 0 || (r.PriceLevel.HasValue && SelectedPrices.Contains(r.PriceLevel.Value))) &&
+                ((FilterShowFiable || FilterShowNonFiable) && 
+                    ((FilterShowFiable && r.EstFiable) || (FilterShowNonFiable && !r.EstFiable)));
+        }).ToList();
     }
 
     private void ResetFilter()
@@ -824,7 +920,49 @@
         searchType = string.Empty;
         searchRestaurantType = string.Empty;
         searchVille = string.Empty;
+        SelectedTypes = new() { TypeRestaurant.Physique, TypeRestaurant.EnLigne };
+        SelectedRestaurantTypes.Clear();
+        SelectedVilles.Clear();
+        SelectedRatings.Clear();
+        SelectedPrices.Clear();
+        FilterShowFiable = true;
+        FilterShowNonFiable = false;
         FilteredRestaurants = ListeRestaurants.ToList();
+    }
+
+    private void ToggleTypeSelection(TypeRestaurant type, object? rawValue)
+    {
+        if (SelectedTypes.Contains(type)) SelectedTypes.Remove(type);
+        else SelectedTypes.Add(type);
+    }
+
+    private void ToggleRestaurantType(string type, object? rawValue)
+    {
+        if (SelectedRestaurantTypes.Contains(type)) SelectedRestaurantTypes.Remove(type);
+        else SelectedRestaurantTypes.Add(type);
+    }
+
+    private void ToggleVille(string ville, object? rawValue)
+    {
+        if (SelectedVilles.Contains(ville)) SelectedVilles.Remove(ville);
+        else SelectedVilles.Add(ville);
+    }
+
+    private void ToggleRating(int rating, object? rawValue)
+    {
+        if (SelectedRatings.Contains(rating)) SelectedRatings.Remove(rating);
+        else SelectedRatings.Add(rating);
+    }
+
+    private void TogglePrice(int price, object? rawValue)
+    {
+        if (SelectedPrices.Contains(price)) SelectedPrices.Remove(price);
+        else SelectedPrices.Add(price);
+    }
+
+    private void ToggleFiableState()
+    {
+        ApplyFilter();
     }
 
     private void CommencerEdition(Restaurant resto)
