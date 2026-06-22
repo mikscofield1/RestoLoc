@@ -324,11 +324,11 @@
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddFiable" data-bs-toggle="dropdown" aria-expanded="false">Fiable</button>
                         <ul class="dropdown-menu p-2" aria-labelledby="ddFiable">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="fiableTrue" @onchange="e => { FilterShowFiable = (bool)e.Value; ToggleFiableState(); }" checked="@FilterShowFiable" />
+                                <input class="form-check-input" type="checkbox" id="fiableTrue" @onchange="e => { FilterShowFiable = (bool)(e.Value ?? false); ToggleFiableState(); }" checked="@FilterShowFiable" />
                                 <label class="form-check-label small" for="fiableTrue">✅ Fiable</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="fiableFalse" @onchange="e => { FilterShowNonFiable = (bool)e.Value; ToggleFiableState(); }" checked="@FilterShowNonFiable" />
+                                <input class="form-check-input" type="checkbox" id="fiableFalse" @onchange="e => { FilterShowNonFiable = (bool)(e.Value ?? false); ToggleFiableState(); }" checked="@FilterShowNonFiable" />
                                 <label class="form-check-label small" for="fiableFalse">❌ Non fiable</label>
                             </div>
                         </ul>
@@ -343,6 +343,34 @@
                     </div>
                     <div class="col-6 col-md-2">
                         <button class="btn btn-outline-secondary btn-sm w-100" @onclick="ResetFilter">Réinitialiser</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="border-top pt-3 mt-3">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="fw-bold text-info"><i class="bi bi-sort"></i> Tri:</span>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <input type="radio" class="btn-check" name="sortOption" id="sortRating" value="rating" @onchange="e => HandleSortChange(e)" checked="@(sortBy == "rating")" />
+                            <label class="btn btn-outline-info" for="sortRating">⭐ Note</label>
+
+                            <input type="radio" class="btn-check" name="sortOption" id="sortPrice" value="price" @onchange="e => HandleSortChange(e)" checked="@(sortBy == "price")" />
+                            <label class="btn btn-outline-info" for="sortPrice">💰 Prix</label>
+
+                            <input type="radio" class="btn-check" name="sortOption" id="sortDate" value="date" @onchange="e => HandleSortChange(e)" checked="@(sortBy == "date")" />
+                            <label class="btn btn-outline-info" for="sortDate">📅 Ajout</label>
+                        </div>
+                        <button class="btn btn-outline-info btn-sm ms-auto" @onclick="() => { sortAscending = !sortAscending; ApplyFilter(); }" title="@(sortAscending ? "Ordre croissant" : "Ordre décroissant")">
+                            @if (sortAscending)
+                            {
+                                <span aria-hidden="true">↑</span>
+                            }
+                            else
+                            {
+                                <span aria-hidden="true">↓</span>
+                            }
+                        </button>
                     </div>
                 </div>
             </div>
@@ -784,6 +812,10 @@
     private bool isLoading = false;
     private string loadingMessage = string.Empty;
 
+    // Tri des restaurants
+    private string sortBy = "rating"; // rating, price, date
+    private bool sortAscending = false; // false = descendant, true = ascendant
+
     protected override async Task OnInitializedAsync()
     {
         await ChargerRestaurants();
@@ -883,7 +915,7 @@
     private void ApplyFilter()
     {
         var text = searchText?.Trim().ToLowerInvariant() ?? string.Empty;
-        FilteredRestaurants = ListeRestaurants.Where(r =>
+        var filtered = ListeRestaurants.Where(r =>
         {
             // Chercher dans les propriétés du restaurant
             var matchRestaurant = string.IsNullOrEmpty(text) ||
@@ -897,7 +929,7 @@
 
             // Chercher dans les commentaires
             var matchComments = false;
-            if (!string.IsNullOrEmpty(text) && commentsCache.ContainsKey(r.Nom))
+            if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(r.Nom) && commentsCache.ContainsKey(r.Nom))
             {
                 matchComments = commentsCache[r.Nom].Any(c => 
                     c.Texte?.Contains(text, StringComparison.OrdinalIgnoreCase) == true);
@@ -912,6 +944,21 @@
                 ((FilterShowFiable || FilterShowNonFiable) && 
                     ((FilterShowFiable && r.EstFiable) || (FilterShowNonFiable && !r.EstFiable)));
         }).ToList();
+
+        // Appliquer le tri
+        FilteredRestaurants = sortBy switch
+        {
+            "rating" => sortAscending 
+                ? filtered.OrderBy(r => r.Rating ?? 0).ToList()
+                : filtered.OrderByDescending(r => r.Rating ?? 0).ToList(),
+            "price" => sortAscending 
+                ? filtered.OrderBy(r => r.PriceLevel ?? 0).ToList()
+                : filtered.OrderByDescending(r => r.PriceLevel ?? 0).ToList(),
+            "date" => sortAscending 
+                ? filtered.OrderBy(r => r.CreatedAt ?? DateTime.MinValue).ToList()
+                : filtered.OrderByDescending(r => r.CreatedAt ?? DateTime.MinValue).ToList(),
+            _ => filtered
+        };
     }
 
     private void ResetFilter()
@@ -927,6 +974,8 @@
         SelectedPrices.Clear();
         FilterShowFiable = true;
         FilterShowNonFiable = false;
+        sortBy = "rating";
+        sortAscending = false;
         FilteredRestaurants = ListeRestaurants.ToList();
     }
 
@@ -962,6 +1011,12 @@
 
     private void ToggleFiableState()
     {
+        ApplyFilter();
+    }
+
+    private void HandleSortChange(ChangeEventArgs e)
+    {
+        sortBy = e.Value?.ToString() ?? "rating";
         ApplyFilter();
     }
 
