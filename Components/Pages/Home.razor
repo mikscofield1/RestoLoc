@@ -78,21 +78,21 @@
                     <input type="text" @bind="nouveauResto.Food" class="form-control form-control-sm" placeholder="Type Nourriture" />
                 </div>
                 <div class="col-md-2">
-                    <select @bind="nouveauResto.Rating" class="form-select form-select-sm">
+                    <select @onchange="e => { if (int.TryParse(e.Value?.ToString(), out int rating)) { nouveauResto.Rating = rating; } else { nouveauResto.Rating = null; } }" class="form-select form-select-sm">
                         <option value="">Note (étoiles)</option>
-                        <option value="1">★ 1</option>
-                        <option value="2">★★ 2</option>
-                        <option value="3">★★★ 3</option>
-                        <option value="4">★★★★ 4</option>
-                        <option value="5">★★★★★ 5</option>
+                        <option value="1" selected="@(nouveauResto.Rating == 1)">★ 1</option>
+                        <option value="2" selected="@(nouveauResto.Rating == 2)">★★ 2</option>
+                        <option value="3" selected="@(nouveauResto.Rating == 3)">★★★ 3</option>
+                        <option value="4" selected="@(nouveauResto.Rating == 4)">★★★★ 4</option>
+                        <option value="5" selected="@(nouveauResto.Rating == 5)">★★★★★ 5</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <select @bind="nouveauResto.PriceLevel" class="form-select form-select-sm">
+                    <select @onchange="e => { if (int.TryParse(e.Value?.ToString(), out int price)) { nouveauResto.PriceLevel = price; } else { nouveauResto.PriceLevel = null; } }" class="form-select form-select-sm">
                         <option value="">Prix</option>
-                        <option value="1">$</option>
-                        <option value="2">$$</option>
-                        <option value="3">$$$</option>
+                        <option value="1" selected="@(nouveauResto.PriceLevel == 1)">$</option>
+                        <option value="2" selected="@(nouveauResto.PriceLevel == 2)">$$</option>
+                        <option value="3" selected="@(nouveauResto.PriceLevel == 3)">$$$</option>
                     </select>
                 </div>
                 <div class="col-12"></div>
@@ -171,22 +171,22 @@
                 </div>
                 <div class="col-12 col-md-2">
                     <label class="form-label fw-bold small text-warning">Note</label>
-                    <select @bind="restoEnEdition.Rating" class="form-select form-select-sm">
+                    <select @onchange="e => { if (int.TryParse(e.Value?.ToString(), out int rating)) { restoEnEdition.Rating = rating; } else { restoEnEdition.Rating = null; } }" class="form-select form-select-sm">
                         <option value="">Note (étoiles)</option>
-                        <option value="1">★ 1</option>
-                        <option value="2">★★ 2</option>
-                        <option value="3">★★★ 3</option>
-                        <option value="4">★★★★ 4</option>
-                        <option value="5">★★★★★ 5</option>
+                        <option value="1" selected="@(restoEnEdition.Rating == 1)">★ 1</option>
+                        <option value="2" selected="@(restoEnEdition.Rating == 2)">★★ 2</option>
+                        <option value="3" selected="@(restoEnEdition.Rating == 3)">★★★ 3</option>
+                        <option value="4" selected="@(restoEnEdition.Rating == 4)">★★★★ 4</option>
+                        <option value="5" selected="@(restoEnEdition.Rating == 5)">★★★★★ 5</option>
                     </select>
                 </div>
                 <div class="col-12 col-md-2">
                     <label class="form-label fw-bold small text-warning">Prix</label>
-                    <select @bind="restoEnEdition.PriceLevel" class="form-select form-select-sm">
+                    <select @onchange="e => { if (int.TryParse(e.Value?.ToString(), out int price)) { restoEnEdition.PriceLevel = price; } else { restoEnEdition.PriceLevel = null; } }" class="form-select form-select-sm">
                         <option value="">Prix</option>
-                        <option value="1">$</option>
-                        <option value="2">$$</option>
-                        <option value="3">$$$</option>
+                        <option value="1" selected="@(restoEnEdition.PriceLevel == 1)">$</option>
+                        <option value="2" selected="@(restoEnEdition.PriceLevel == 2)">$$</option>
+                        <option value="3" selected="@(restoEnEdition.PriceLevel == 3)">$$$</option>
                     </select>
                 </div>
             </div>
@@ -247,11 +247,11 @@
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddType" data-bs-toggle="dropdown" aria-expanded="false">Type</button>
                     <ul class="dropdown-menu p-2" aria-labelledby="ddType">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="typePhysique" @onchange="e => ToggleTypeSelection(TypeRestaurant.Physique, ((ChangeEventArgs)e).Value)" checked="@SelectedTypes.Contains(TypeRestaurant.Physique)" />
+                            <input class="form-check-input" type="checkbox" id="typePhysique" @onchange="() => ToggleTypeSelection(TypeRestaurant.Physique)" checked="@SelectedTypes.Contains(TypeRestaurant.Physique)" />
                             <label class="form-check-label small" for="typePhysique">Physique</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="typeEnLigne" @onchange="e => ToggleTypeSelection(TypeRestaurant.EnLigne, ((ChangeEventArgs)e).Value)" checked="@SelectedTypes.Contains(TypeRestaurant.EnLigne)" />
+                            <input class="form-check-input" type="checkbox" id="typeEnLigne" @onchange="() => ToggleTypeSelection(TypeRestaurant.EnLigne)" checked="@SelectedTypes.Contains(TypeRestaurant.EnLigne)" />
                             <label class="form-check-label small" for="typeEnLigne">En ligne</label>
                         </div>
                     </ul>
@@ -266,7 +266,7 @@
                         {
                             var id = $"rt_{type.Replace(' ', '_')}";
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="@id" @onchange="e => ToggleRestaurantType(type, ((ChangeEventArgs)e).Value)" checked="@SelectedRestaurantTypes.Contains(type)" />
+                                <input class="form-check-input" type="checkbox" id="@id" @onchange="() => ToggleRestaurantType(type)" checked="@SelectedRestaurantTypes.Contains(type)" />
                                 <label class="form-check-label small" for="@id">@type</label>
                             </div>
                         }
@@ -282,7 +282,7 @@
                         {
                             var idv = $"v_{ville.Replace(' ', '_')}";
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="@idv" @onchange="e => ToggleVille(ville, ((ChangeEventArgs)e).Value)" checked="@SelectedVilles.Contains(ville)" />
+                                <input class="form-check-input" type="checkbox" id="@idv" @onchange="() => ToggleVille(ville)" checked="@SelectedVilles.Contains(ville)" />
                                 <label class="form-check-label small" for="@idv">@ville</label>
                             </div>
                         }
@@ -298,9 +298,10 @@
                             @for (int i = 1; i <= 5; i++)
                             {
                                 var idr = $"r_{i}";
+                                var ratingVal = i;
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="@idr" @onchange="e => ToggleRating(i, ((ChangeEventArgs)e).Value)" checked="@SelectedRatings.Contains(i)" />
-                                    <label class="form-check-label small" for="@idr">@RenderStars(i)</label>
+                                    <input class="form-check-input" type="checkbox" id="@idr" value="@ratingVal" @onchange="() => ToggleRating(ratingVal)" checked="@SelectedRatings.Contains(ratingVal)" />
+                                    <label class="form-check-label small" for="@idr">@RenderStars(ratingVal)</label>
                                 </div>
                             }
                         </ul>
@@ -310,13 +311,14 @@
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddPrice" data-bs-toggle="dropdown" aria-expanded="false">Prix</button>
                         <ul class="dropdown-menu p-2" aria-labelledby="ddPrice">
                             @for (int p = 1; p <= 3; p++)
-                            {
-                                var idp = $"p_{p}";
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="@idp" @onchange="e => TogglePrice(p, ((ChangeEventArgs)e).Value)" checked="@SelectedPrices.Contains(p)" />
-                                    <label class="form-check-label small" for="@idp">@RenderPriceLevel(p)</label>
-                                </div>
-                            }
+                                {
+                                    var idp = $"p_{p}";
+                                    var priceVal = p;
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="@idp" value="@priceVal" @onchange="() => TogglePrice(priceVal)" checked="@SelectedPrices.Contains(priceVal)" />
+                                        <label class="form-check-label small" for="@idp">@RenderPriceLevel(priceVal)</label>
+                                    </div>
+                                }
                         </ul>
                     </div>
 
@@ -339,9 +341,6 @@
             <div class="col-12">
                 <div class="row g-2">
                     <div class="col-6 col-md-2">
-                        <button class="btn btn-outline-primary btn-sm w-100" @onclick="ApplyFilter">Appliquer</button>
-                    </div>
-                    <div class="col-6 col-md-2">
                         <button class="btn btn-outline-secondary btn-sm w-100" @onclick="ResetFilter">Réinitialiser</button>
                     </div>
                 </div>
@@ -361,7 +360,7 @@
                             <input type="radio" class="btn-check" name="sortOption" id="sortDate" value="date" @onchange="e => HandleSortChange(e)" checked="@(sortBy == "date")" />
                             <label class="btn btn-outline-info" for="sortDate">📅 Ajout</label>
                         </div>
-                        <button class="btn btn-outline-info btn-sm ms-auto" @onclick="() => { sortAscending = !sortAscending; ApplyFilter(); }" title="@(sortAscending ? "Ordre croissant" : "Ordre décroissant")">
+                        <button class="btn btn-outline-info btn-sm ms-auto" @onclick="ToggleSortDirection" title="@(sortAscending ? "Ordre croissant" : "Ordre décroissant")">
                             @if (sortAscending)
                             {
                                 <span aria-hidden="true">↑</span>
@@ -912,6 +911,60 @@
         StateHasChanged();
     }
 
+    private async Task ApplyFilterAsync()
+    {
+        await RunWithLoading("Tri en cours...", async () =>
+        {
+            var text = searchText?.Trim().ToLowerInvariant() ?? string.Empty;
+            var filtered = ListeRestaurants.Where(r =>
+            {
+                // Chercher dans les propriétés du restaurant
+                var matchRestaurant = string.IsNullOrEmpty(text) ||
+                    (r.Nom?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                    (r.Telephone?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                    (r.OriginePoulet?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                    (r.OrigineViande?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                    (r.RestaurantType?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                    (r.Food?.Contains(text, StringComparison.OrdinalIgnoreCase) == true) ||
+                    (r.LienCommande?.Contains(text, StringComparison.OrdinalIgnoreCase) == true);
+
+                // Chercher dans les commentaires
+                var matchComments = false;
+                if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(r.Nom) && commentsCache.ContainsKey(r.Nom))
+                {
+                    matchComments = commentsCache[r.Nom].Any(c => 
+                        c.Texte?.Contains(text, StringComparison.OrdinalIgnoreCase) == true);
+                }
+
+                return (matchRestaurant || matchComments) &&
+                    (SelectedTypes.Count == 0 || SelectedTypes.Contains(r.Type)) &&
+                    (SelectedRestaurantTypes.Count == 0 || SelectedRestaurantTypes.Contains(r.RestaurantType ?? string.Empty)) &&
+                    (SelectedVilles.Count == 0 || SelectedVilles.Contains(r.Ville ?? string.Empty)) &&
+                    (SelectedRatings.Count == 0 || (r.Rating.HasValue && SelectedRatings.Contains(r.Rating.Value))) &&
+                    (SelectedPrices.Count == 0 || (r.PriceLevel.HasValue && SelectedPrices.Contains(r.PriceLevel.Value))) &&
+                    ((FilterShowFiable || FilterShowNonFiable) && 
+                        ((FilterShowFiable && r.EstFiable) || (FilterShowNonFiable && !r.EstFiable)));
+            }).ToList();
+
+            // Appliquer le tri - séparer restaurants avec valeur de ceux sans valeur
+            FilteredRestaurants = sortBy switch
+            {
+                "rating" => sortAscending 
+                    ? filtered.OrderBy(r => !r.Rating.HasValue).ThenBy(r => r.Rating).ToList()
+                    : filtered.OrderBy(r => !r.Rating.HasValue).ThenByDescending(r => r.Rating).ToList(),
+                "price" => sortAscending 
+                    ? filtered.OrderBy(r => !r.PriceLevel.HasValue).ThenBy(r => r.PriceLevel).ToList()
+                    : filtered.OrderBy(r => !r.PriceLevel.HasValue).ThenByDescending(r => r.PriceLevel).ToList(),
+                "date" => sortAscending 
+                    ? filtered.OrderBy(r => !r.CreatedAt.HasValue).ThenBy(r => r.CreatedAt).ToList()
+                    : filtered.OrderBy(r => !r.CreatedAt.HasValue).ThenByDescending(r => r.CreatedAt).ToList(),
+                _ => filtered
+            };
+            
+            await Task.CompletedTask;
+        });
+    }
+
     private void ApplyFilter()
     {
         var text = searchText?.Trim().ToLowerInvariant() ?? string.Empty;
@@ -945,20 +998,22 @@
                     ((FilterShowFiable && r.EstFiable) || (FilterShowNonFiable && !r.EstFiable)));
         }).ToList();
 
-        // Appliquer le tri
+        // Appliquer le tri - séparer restaurants avec valeur de ceux sans valeur
         FilteredRestaurants = sortBy switch
         {
             "rating" => sortAscending 
-                ? filtered.OrderBy(r => r.Rating ?? 0).ToList()
-                : filtered.OrderByDescending(r => r.Rating ?? 0).ToList(),
+                ? filtered.OrderBy(r => !r.Rating.HasValue).ThenBy(r => r.Rating).ToList()
+                : filtered.OrderBy(r => !r.Rating.HasValue).ThenByDescending(r => r.Rating).ToList(),
             "price" => sortAscending 
-                ? filtered.OrderBy(r => r.PriceLevel ?? 0).ToList()
-                : filtered.OrderByDescending(r => r.PriceLevel ?? 0).ToList(),
+                ? filtered.OrderBy(r => !r.PriceLevel.HasValue).ThenBy(r => r.PriceLevel).ToList()
+                : filtered.OrderBy(r => !r.PriceLevel.HasValue).ThenByDescending(r => r.PriceLevel).ToList(),
             "date" => sortAscending 
-                ? filtered.OrderBy(r => r.CreatedAt ?? DateTime.MinValue).ToList()
-                : filtered.OrderByDescending(r => r.CreatedAt ?? DateTime.MinValue).ToList(),
+                ? filtered.OrderBy(r => !r.CreatedAt.HasValue).ThenBy(r => r.CreatedAt).ToList()
+                : filtered.OrderBy(r => !r.CreatedAt.HasValue).ThenByDescending(r => r.CreatedAt).ToList(),
             _ => filtered
         };
+        
+        StateHasChanged();
     }
 
     private void ResetFilter()
@@ -979,34 +1034,39 @@
         FilteredRestaurants = ListeRestaurants.ToList();
     }
 
-    private void ToggleTypeSelection(TypeRestaurant type, object? rawValue)
+    private void ToggleTypeSelection(TypeRestaurant type)
     {
         if (SelectedTypes.Contains(type)) SelectedTypes.Remove(type);
         else SelectedTypes.Add(type);
+        ApplyFilter();
     }
 
-    private void ToggleRestaurantType(string type, object? rawValue)
+    private void ToggleRestaurantType(string type)
     {
         if (SelectedRestaurantTypes.Contains(type)) SelectedRestaurantTypes.Remove(type);
         else SelectedRestaurantTypes.Add(type);
+        ApplyFilter();
     }
 
-    private void ToggleVille(string ville, object? rawValue)
+    private void ToggleVille(string ville)
     {
         if (SelectedVilles.Contains(ville)) SelectedVilles.Remove(ville);
         else SelectedVilles.Add(ville);
+        ApplyFilter();
     }
 
-    private void ToggleRating(int rating, object? rawValue)
+    private void ToggleRating(int rating)
     {
         if (SelectedRatings.Contains(rating)) SelectedRatings.Remove(rating);
         else SelectedRatings.Add(rating);
+        ApplyFilter();
     }
 
-    private void TogglePrice(int price, object? rawValue)
+    private void TogglePrice(int price)
     {
         if (SelectedPrices.Contains(price)) SelectedPrices.Remove(price);
         else SelectedPrices.Add(price);
+        ApplyFilter();
     }
 
     private void ToggleFiableState()
@@ -1014,10 +1074,16 @@
         ApplyFilter();
     }
 
-    private void HandleSortChange(ChangeEventArgs e)
+    private async Task HandleSortChange(ChangeEventArgs e)
     {
         sortBy = e.Value?.ToString() ?? "rating";
-        ApplyFilter();
+        await ApplyFilterAsync();
+    }
+
+    private async Task ToggleSortDirection()
+    {
+        sortAscending = !sortAscending;
+        await ApplyFilterAsync();
     }
 
     private void CommencerEdition(Restaurant resto)
