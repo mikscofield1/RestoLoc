@@ -26,9 +26,8 @@
 <div class="container mt-4">
     @if (!string.IsNullOrEmpty(messageSuccess))
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 2000; background-color: rgba(25, 135, 84, 0.95); color: white; padding: 1rem 1.4rem; border-radius: 0.85rem; box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,0.25); min-width: 280px; text-align: center; font-weight: 600;">
             @messageSuccess
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" @onclick="() => messageSuccess = string.Empty"></button>
         </div>
     }
 
@@ -165,7 +164,6 @@
                     <button class="btn btn-success btn-sm px-4" @onclick="AjouterLeRestaurant">Enregistrer</button>
                 </div>
             </div>
-            @if (!string.IsNullOrEmpty(messageSuccess)) { <div class="text-success small mt-2">@messageSuccess</div> }
             @if (!string.IsNullOrEmpty(messageErreur)) { <div class="text-danger small mt-2">@messageErreur</div> }
                 </div>
             </div>
@@ -275,7 +273,6 @@
                     <button class="btn btn-secondary btn-sm px-4" @onclick="AnnulerEdition">Annuler</button>
                 </div>
             </div>
-            @if (!string.IsNullOrEmpty(messageSuccess)) { <div class="text-success small mt-2">@messageSuccess</div> }
             @if (!string.IsNullOrEmpty(messageErreur)) { <div class="text-danger small mt-2">@messageErreur</div> }
         </div>
     }
@@ -1417,7 +1414,7 @@
 
         try
         {
-            await Task.Delay(3000, successMessageCts.Token);
+            await Task.Delay(1000, successMessageCts.Token);
             messageSuccess = string.Empty;
         }
         catch (TaskCanceledException)
