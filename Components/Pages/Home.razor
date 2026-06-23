@@ -103,6 +103,26 @@
                     <div class="col-md-6">
                         <input type="text" @bind="urlGoogleMaps" class="form-control form-control-sm" placeholder="Lien Google Maps (Optionnel)" />
                     </div>
+                        @if (showAnalysisConfirmation && extractedAnalysis != null)
+                        {
+                            <div class="col-12 mt-2">
+                                <div class="alert alert-info p-2">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>Extraction depuis le lien :</strong>
+                                            <div class="small mt-1">Nom proposé: <strong>@(string.IsNullOrEmpty(extractedAnalysis.Resto.Nom) ? "—" : extractedAnalysis.Resto.Nom)</strong></div>
+                                            <div class="small">Ville proposée: <strong>@(string.IsNullOrEmpty(extractedAnalysis.Resto.Ville) ? "—" : extractedAnalysis.Resto.Ville)</strong></div>
+                                            <div class="small">Coordonnées: <strong>@(extractedAnalysis.Resto.Latitude != 0 || extractedAnalysis.Resto.Longitude != 0 ? $"{extractedAnalysis.Resto.Latitude}, {extractedAnalysis.Resto.Longitude}" : "—")</strong></div>
+                                        </div>
+                                        <div class="text-end">
+                                            <button class="btn btn-sm btn-success me-2" @onclick="ConfirmExtractedAndAdd">Valider l'extraction</button>
+                                            <button class="btn btn-sm btn-outline-secondary" @onclick="CancelExtraction">Modifier manuellement</button>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2 small text-muted">Si l'extraction est incomplète ou incorrecte, choisissez "Modifier manuellement" puis corrigez les champs avant d'enregistrer.</div>
+                                </div>
+                            </div>
+                        }
                     <div class="col-md-4"></div>
                 }
                 else
@@ -792,6 +812,8 @@
     private string urlGoogleMaps = string.Empty;
     private string messageErreur = string.Empty;
     private Restaurant nouveauResto = new();
+    private Calculs.GoogleMapsAnalysisResult? extractedAnalysis = null;
+    private bool showAnalysisConfirmation = false;
     private Restaurant? restoEnEdition = null;
     private string? originalRestaurantNom = null;
     private List<Restaurant> ListeRestaurants = new();
@@ -1293,23 +1315,34 @@
         if (!string.IsNullOrWhiteSpace(urlGoogleMaps))
         {
             urlGoogleMaps = await Calculs.ResolveGoogleMapsShortUrlAsync(Http, urlGoogleMaps);
-            var restoAutomatique = Calculs.AnalyserUrlGoogleMaps(urlGoogleMaps);
-            if (restoAutomatique != null)
+            var analysis = Calculs.AnalyserUrlGoogleMaps(urlGoogleMaps);
+            if (analysis == null)
             {
-                // Si le nom a été trouvé dans l'URL, on le prend, sinon on garde celui du champ texte
-                if (!string.IsNullOrEmpty(restoAutomatique.Nom))
-                {
-                    nouveauResto.Nom = restoAutomatique.Nom;
-                }
+                messageErreur = "Impossible d'analyser cette URL. Vérifiez qu'il s'agit d'un lien Google Maps valide.";
+                return;
+            }
 
-                nouveauResto.LienCommande = restoAutomatique.LienCommande;
-                nouveauResto.Type = TypeRestaurant.Physique;
-                nouveauResto.EstFiable = true;
+            // Pré-remplir les champs trouvés
+            if (!string.IsNullOrEmpty(analysis.Resto.Nom)) nouveauResto.Nom = analysis.Resto.Nom;
+            if (!string.IsNullOrEmpty(analysis.Resto.Ville)) nouveauResto.Ville = analysis.Resto.Ville;
+            if (!string.IsNullOrEmpty(analysis.Resto.LienCommande)) nouveauResto.LienCommande = analysis.Resto.LienCommande;
+            if (analysis.Resto.Latitude != 0 || analysis.Resto.Longitude != 0)
+            {
+                nouveauResto.Latitude = analysis.Resto.Latitude;
+                nouveauResto.Longitude = analysis.Resto.Longitude;
+            }
+
+            // Si l'analyse est peu confiante, demander confirmation avant l'ajout
+            if (!analysis.IsConfident)
+            {
+                extractedAnalysis = analysis;
+                showAnalysisConfirmation = true;
+                return;
             }
             else
             {
-                messageErreur = "Impossible d'analyser cette URL. Vérifiez qu'il s'agit d'un lien complet du navigateur.";
-                return;
+                nouveauResto.Type = TypeRestaurant.Physique;
+                nouveauResto.EstFiable = true;
             }
         }
 
@@ -1320,19 +1353,26 @@
             return;
         }
 
+        await PerformAddRestaurant(nouveauResto);
+    }
+
+    private async Task PerformAddRestaurant(Restaurant restoToAdd)
+    {
         try
         {
             await RunWithLoading("Ajout du restaurant en cours…", async () =>
             {
-                var success = await SupabaseService.AddRestaurantAsync(nouveauResto);
+                var success = await SupabaseService.AddRestaurantAsync(restoToAdd);
                 if (success)
                 {
                     // Réinitialisation
                     nouveauResto = new Restaurant();
                     urlGoogleMaps = string.Empty;
-                        await ChargerRestaurants();
-                        // Ferme le panneau d'ajout après succès
-                        showAddForm = false;
+                    extractedAnalysis = null;
+                    showAnalysisConfirmation = false;
+                    await ChargerRestaurants();
+                    // Ferme le panneau d'ajout après succès
+                    showAddForm = false;
                 }
                 else
                 {
@@ -1344,6 +1384,34 @@
         {
             messageErreur = $"Erreur: {ex.Message}";
         }
+    }
+
+    private async Task ConfirmExtractedAndAdd()
+    {
+        if (extractedAnalysis != null)
+        {
+            // s'assurer que nouveauResto contient les données extraites
+            var r = extractedAnalysis.Resto;
+            if (!string.IsNullOrEmpty(r.Nom)) nouveauResto.Nom = r.Nom;
+            if (!string.IsNullOrEmpty(r.Ville)) nouveauResto.Ville = r.Ville;
+            if (!string.IsNullOrEmpty(r.LienCommande)) nouveauResto.LienCommande = r.LienCommande;
+            if (r.Latitude != 0 || r.Longitude != 0)
+            {
+                nouveauResto.Latitude = r.Latitude;
+                nouveauResto.Longitude = r.Longitude;
+            }
+
+            nouveauResto.Type = TypeRestaurant.Physique;
+            nouveauResto.EstFiable = true;
+
+            await PerformAddRestaurant(nouveauResto);
+        }
+    }
+
+    private void CancelExtraction()
+    {
+        showAnalysisConfirmation = false;
+        extractedAnalysis = null;
     }
 
     // Méthodes pour les commentaires
