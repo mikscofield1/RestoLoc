@@ -252,11 +252,11 @@
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddType" data-bs-toggle="dropdown" aria-expanded="false">Type</button>
                     <ul class="dropdown-menu p-2" aria-labelledby="ddType">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="typePhysique" @onchange="() => ToggleTypeSelection(TypeRestaurant.Physique)" checked="@SelectedTypes.Contains(TypeRestaurant.Physique)" />
+                            <input class="form-check-input" type="checkbox" id="typePhysique" @onchange="async () => await ToggleTypeSelectionAsync(TypeRestaurant.Physique)" checked="@SelectedTypes.Contains(TypeRestaurant.Physique)" />
                             <label class="form-check-label small" for="typePhysique">Physique</label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="typeEnLigne" @onchange="() => ToggleTypeSelection(TypeRestaurant.EnLigne)" checked="@SelectedTypes.Contains(TypeRestaurant.EnLigne)" />
+                            <input class="form-check-input" type="checkbox" id="typeEnLigne" @onchange="async () => await ToggleTypeSelectionAsync(TypeRestaurant.EnLigne)" checked="@SelectedTypes.Contains(TypeRestaurant.EnLigne)" />
                             <label class="form-check-label small" for="typeEnLigne">En ligne</label>
                         </div>
                     </ul>
@@ -271,7 +271,7 @@
                         {
                             var id = $"rt_{type.Replace(' ', '_')}";
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="@id" @onchange="() => ToggleRestaurantType(type)" checked="@SelectedRestaurantTypes.Contains(type)" />
+                                <input class="form-check-input" type="checkbox" id="@id" @onchange="async () => await ToggleRestaurantTypeAsync(type)" checked="@SelectedRestaurantTypes.Contains(type)" />
                                 <label class="form-check-label small" for="@id">@type</label>
                             </div>
                         }
@@ -287,7 +287,7 @@
                         {
                             var idv = $"v_{ville.Replace(' ', '_')}";
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="@idv" @onchange="() => ToggleVille(ville)" checked="@SelectedVilles.Contains(ville)" />
+                                <input class="form-check-input" type="checkbox" id="@idv" @onchange="async () => await ToggleVilleAsync(ville)" checked="@SelectedVilles.Contains(ville)" />
                                 <label class="form-check-label small" for="@idv">@ville</label>
                             </div>
                         }
@@ -305,7 +305,7 @@
                                 var idr = $"r_{i}";
                                 var ratingVal = i;
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="@idr" value="@ratingVal" @onchange="() => ToggleRating(ratingVal)" checked="@SelectedRatings.Contains(ratingVal)" />
+                                    <input class="form-check-input" type="checkbox" id="@idr" value="@ratingVal" @onchange="async () => await ToggleRatingAsync(ratingVal)" checked="@SelectedRatings.Contains(ratingVal)" />
                                     <label class="form-check-label small" for="@idr">@RenderStars(ratingVal)</label>
                                 </div>
                             }
@@ -320,7 +320,7 @@
                                     var idp = $"p_{p}";
                                     var priceVal = p;
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="@idp" value="@priceVal" @onchange="() => TogglePrice(priceVal)" checked="@SelectedPrices.Contains(priceVal)" />
+                                        <input class="form-check-input" type="checkbox" id="@idp" value="@priceVal" @onchange="async () => await TogglePriceAsync(priceVal)" checked="@SelectedPrices.Contains(priceVal)" />
                                         <label class="form-check-label small" for="@idp">@RenderPriceLevel(priceVal)</label>
                                     </div>
                                 }
@@ -331,11 +331,11 @@
                         <button class="btn btn-sm btn-outline-secondary dropdown-toggle w-100" type="button" id="ddFiable" data-bs-toggle="dropdown" aria-expanded="false">Fiable</button>
                         <ul class="dropdown-menu p-2" aria-labelledby="ddFiable">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="fiableTrue" @onchange="e => { FilterShowFiable = (bool)(e.Value ?? false); ToggleFiableState(); }" checked="@FilterShowFiable" />
+                                <input class="form-check-input" type="checkbox" id="fiableTrue" @onchange="async e => { FilterShowFiable = (bool)(e.Value ?? false); await ToggleFiableStateAsync(); }" checked="@FilterShowFiable" />
                                 <label class="form-check-label small" for="fiableTrue">✅ Fiable</label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="fiableFalse" @onchange="e => { FilterShowNonFiable = (bool)(e.Value ?? false); ToggleFiableState(); }" checked="@FilterShowNonFiable" />
+                                <input class="form-check-input" type="checkbox" id="fiableFalse" @onchange="async e => { FilterShowNonFiable = (bool)(e.Value ?? false); await ToggleFiableStateAsync(); }" checked="@FilterShowNonFiable" />
                                 <label class="form-check-label small" for="fiableFalse">❌ Non fiable</label>
                             </div>
                         </ul>
@@ -346,7 +346,7 @@
             <div class="col-12">
                 <div class="row g-2">
                     <div class="col-6 col-md-2">
-                        <button class="btn btn-outline-warning btn-sm w-100" @onclick="ResetFilter" title="Réinitialiser tous les filtres">
+                        <button class="btn btn-outline-warning btn-sm w-100" @onclick="ResetFilterAsync" title="Réinitialiser tous les filtres">
                             <i class="bi bi-arrow-counterclockwise me-1"></i>Réinitialiser
                         </button>
                     </div>
@@ -824,7 +824,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await ChargerRestaurants();
+        await RunWithLoading("Chargement des restaurants en cours…", async () =>
+        {
+            await ChargerRestaurants();
+        });
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -920,7 +923,7 @@
 
     private async Task ApplyFilterAsync()
     {
-        await RunWithLoading("Tri en cours...", async () =>
+        await RunWithLoading("Filtrage et tri des restaurants en cours…", async () =>
         {
             var text = searchText?.Trim().ToLowerInvariant() ?? string.Empty;
             var filtered = ListeRestaurants.Where(r =>
@@ -1023,7 +1026,7 @@
         StateHasChanged();
     }
 
-    private void ResetFilter()
+    private async Task ResetFilterAsync()
     {
         searchText = string.Empty;
         searchType = string.Empty;
@@ -1038,47 +1041,47 @@
         FilterShowNonFiable = false;
         sortBy = "rating";
         sortAscending = false;
-        FilteredRestaurants = ListeRestaurants.ToList();
+        await ApplyFilterAsync();
     }
 
-    private void ToggleTypeSelection(TypeRestaurant type)
+    private async Task ToggleTypeSelectionAsync(TypeRestaurant type)
     {
         if (SelectedTypes.Contains(type)) SelectedTypes.Remove(type);
         else SelectedTypes.Add(type);
-        ApplyFilter();
+        await ApplyFilterAsync();
     }
 
-    private void ToggleRestaurantType(string type)
+    private async Task ToggleRestaurantTypeAsync(string type)
     {
         if (SelectedRestaurantTypes.Contains(type)) SelectedRestaurantTypes.Remove(type);
         else SelectedRestaurantTypes.Add(type);
-        ApplyFilter();
+        await ApplyFilterAsync();
     }
 
-    private void ToggleVille(string ville)
+    private async Task ToggleVilleAsync(string ville)
     {
         if (SelectedVilles.Contains(ville)) SelectedVilles.Remove(ville);
         else SelectedVilles.Add(ville);
-        ApplyFilter();
+        await ApplyFilterAsync();
     }
 
-    private void ToggleRating(int rating)
+    private async Task ToggleRatingAsync(int rating)
     {
         if (SelectedRatings.Contains(rating)) SelectedRatings.Remove(rating);
         else SelectedRatings.Add(rating);
-        ApplyFilter();
+        await ApplyFilterAsync();
     }
 
-    private void TogglePrice(int price)
+    private async Task TogglePriceAsync(int price)
     {
         if (SelectedPrices.Contains(price)) SelectedPrices.Remove(price);
         else SelectedPrices.Add(price);
-        ApplyFilter();
+        await ApplyFilterAsync();
     }
 
-    private void ToggleFiableState()
+    private async Task ToggleFiableStateAsync()
     {
-        ApplyFilter();
+        await ApplyFilterAsync();
     }
 
     private bool AnyFilterApplied()
@@ -1244,7 +1247,7 @@
         loadingMessage = message;
         StateHasChanged();
 
-        var minDisplay = Task.Delay(400);
+        var minDisplay = Task.Delay(300);
         await action();
         await minDisplay;
 
