@@ -71,7 +71,7 @@ public static class Calculs
     public class GoogleMapsAnalysisResult
     {
         public Restaurant Resto { get; set; } = new Restaurant();
-        public bool IsConfident { get; set; }
+        public bool IsConfident => !string.IsNullOrEmpty(Resto.Ville);
         public string? RawUrl { get; set; }
     }
 
@@ -95,44 +95,7 @@ public static class Calculs
             resto.Nom = nomExtraite;
         }
 
-        // Try extract coordinates: patterns like @lat,lng or !3dlat!4dlng or ll=lat,lng
-        double? lat = null;
-        double? lng = null;
-
         var decoded = WebUtility.UrlDecode(trimmedUrl);
-
-        var mAt = Regex.Match(decoded, "@(-?[0-9]+\\.[0-9]+),(-?[0-9]+\\.[0-9]+)");
-        if (mAt.Success)
-        {
-            if (double.TryParse(mAt.Groups[1].Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var a)) lat = a;
-            if (double.TryParse(mAt.Groups[2].Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var b)) lng = b;
-        }
-
-        if (!lat.HasValue || !lng.HasValue)
-        {
-            var m33 = Regex.Match(decoded, "!3d(-?[0-9]+\\.[0-9]+)!4d(-?[0-9]+\\.[0-9]+)");
-            if (m33.Success)
-            {
-                if (double.TryParse(m33.Groups[1].Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var a)) lat = a;
-                if (double.TryParse(m33.Groups[2].Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var b)) lng = b;
-            }
-        }
-
-        if (!lat.HasValue || !lng.HasValue)
-        {
-            var mLl = Regex.Match(decoded, "[?&]ll=(-?[0-9]+\\.[0-9]+),(-?[0-9]+\\.[0-9]+)");
-            if (mLl.Success)
-            {
-                if (double.TryParse(mLl.Groups[1].Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var a)) lat = a;
-                if (double.TryParse(mLl.Groups[2].Value, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var b)) lng = b;
-            }
-        }
-
-        if (lat.HasValue && lng.HasValue)
-        {
-            resto.Latitude = lat.Value;
-            resto.Longitude = lng.Value;
-        }
 
         // Try extract city from name or query
         string? ville = null;
@@ -166,13 +129,9 @@ public static class Calculs
 
         if (!string.IsNullOrEmpty(ville)) resto.Ville = ville;
 
-        // Decide confidence: good if we have a name and either city or coordinates
-        var isConfident = !string.IsNullOrEmpty(resto.Nom) && (!string.IsNullOrEmpty(resto.Ville) || (resto.Latitude != 0 && resto.Longitude != 0));
-
         return new GoogleMapsAnalysisResult
         {
             Resto = resto,
-            IsConfident = isConfident,
             RawUrl = trimmedUrl
         };
     }
