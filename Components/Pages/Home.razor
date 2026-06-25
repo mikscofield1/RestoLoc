@@ -411,7 +411,7 @@
                             <input type="radio" class="btn-check" name="sortOption" id="sortPrice" value="price" @onchange="e => HandleSortChange(e)" checked="@(sortBy == "price")" />
                             <label class="btn btn-outline-info" for="sortPrice">💰 Prix</label>
 
-                            <input type="radio" class="btn-check" name="sortOption" id="sortDate" value="date" @onchange="e => HandleSortChange(e)" checked="@(sortBy == "date")" />
+                            <input type="radio" class="btn-check" name="sortOption" id="sortDate" value="created_at" @onchange="e => HandleSortChange(e)" checked="@(sortBy == "created_at")" />
                             <label class="btn btn-outline-info" for="sortDate">📅 Ajout</label>
                         </div>
                         <button class="btn btn-outline-info btn-sm ms-auto" @onclick="ToggleSortDirection" title="@(sortAscending ? "Ordre croissant" : "Ordre décroissant")">
@@ -871,7 +871,7 @@
     private string loadingMessage = string.Empty;
 
     // Tri des restaurants
-    private string sortBy = "rating"; // rating, price, date
+    private string sortBy = "rating"; // rating, price, created_at
     private bool sortAscending = false; // false = descendant, true = ascendant
 
     // Gestion du filtrage manuel
@@ -1020,7 +1020,7 @@
                 "price" => sortAscending 
                     ? filtered.OrderBy(r => !r.PriceLevel.HasValue).ThenBy(r => r.PriceLevel).ToList()
                     : filtered.OrderBy(r => !r.PriceLevel.HasValue).ThenByDescending(r => r.PriceLevel).ToList(),
-                "date" => sortAscending 
+                "created_at" => sortAscending 
                     ? filtered.OrderBy(r => !r.CreatedAt.HasValue).ThenBy(r => r.CreatedAt).ToList()
                     : filtered.OrderBy(r => !r.CreatedAt.HasValue).ThenByDescending(r => r.CreatedAt).ToList(),
                 _ => filtered
@@ -1072,7 +1072,7 @@
             "price" => sortAscending 
                 ? filtered.OrderBy(r => !r.PriceLevel.HasValue).ThenBy(r => r.PriceLevel).ToList()
                 : filtered.OrderBy(r => !r.PriceLevel.HasValue).ThenByDescending(r => r.PriceLevel).ToList(),
-            "date" => sortAscending 
+            "created_at" => sortAscending 
                 ? filtered.OrderBy(r => !r.CreatedAt.HasValue).ThenBy(r => r.CreatedAt).ToList()
                 : filtered.OrderBy(r => !r.CreatedAt.HasValue).ThenByDescending(r => r.CreatedAt).ToList(),
             _ => filtered

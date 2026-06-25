@@ -1,5 +1,6 @@
 using RestoLoc;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -30,11 +31,10 @@ public class SupabaseService
     {
         try
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"{_url}/rest/v1/restaurants");
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{_url}/rest/v1/restaurants?select=*");
             AddHeaders(request);
-            
+
             var response = await _httpClient.SendAsync(request);
-            
             if (!response.IsSuccessStatusCode)
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
@@ -105,6 +105,13 @@ public class SupabaseService
 
                         if (el.TryGetProperty("price_level", out var priceLevelEl) && priceLevelEl.ValueKind == JsonValueKind.Number)
                             resto.PriceLevel = priceLevelEl.GetInt32();
+
+                        if (el.TryGetProperty("created_at", out var createdAtEl) && createdAtEl.ValueKind != JsonValueKind.Null)
+                        {
+                            var rawDate = createdAtEl.GetString();
+                            if (!string.IsNullOrWhiteSpace(rawDate) && DateTime.TryParse(rawDate, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var parsedDate))
+                                resto.CreatedAt = DateTime.SpecifyKind(parsedDate, DateTimeKind.Utc);
+                        }
 
                         restaurants.Add(resto);
                         idx++;
