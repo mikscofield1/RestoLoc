@@ -2,6 +2,7 @@ using RestoLoc;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -166,7 +167,7 @@ public class SupabaseService
             if (!response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
-                LastErrorMessage = $"Supabase {response.StatusCode} {response.ReasonPhrase}: {responseBody}";
+                LastErrorMessage = GetFriendlyAddErrorMessage(response.StatusCode, responseBody);
                 Console.WriteLine("Supabase AddRestaurant payload: " + json);
                 Console.WriteLine($"Erreur lors de l'ajout du restaurant: {LastErrorMessage}");
             }
@@ -178,6 +179,46 @@ public class SupabaseService
             Console.WriteLine($"Erreur lors de l'ajout du restaurant: {ex.Message}");
             return false;
         }
+    }
+
+    private static string GetFriendlyAddErrorMessage(HttpStatusCode statusCode, string responseBody)
+    {
+        var normalizedBody = responseBody?.Trim() ?? string.Empty;
+        string extractedMessage = normalizedBody;
+
+        try
+        {
+            using var doc = JsonDocument.Parse(normalizedBody);
+            var root = doc.RootElement;
+            if (root.ValueKind == JsonValueKind.Object)
+            {
+                if (root.TryGetProperty("message", out var messageEl) && messageEl.ValueKind == JsonValueKind.String)
+                    extractedMessage = messageEl.GetString() ?? extractedMessage;
+                else if (root.TryGetProperty("details", out var detailsEl) && detailsEl.ValueKind == JsonValueKind.String)
+                    extractedMessage = detailsEl.GetString() ?? extractedMessage;
+
+                if (root.TryGetProperty("code", out var codeEl) && codeEl.ValueKind == JsonValueKind.String)
+                {
+                    var codeValue = codeEl.GetString();
+                    if (codeValue == "23505")
+                        return "Le nom du restaurant existe déjà. Merci d'en choisir un autre.";
+                }
+            }
+        }
+        catch
+        {
+            // Ignorer si le corps n'est pas un JSON valide
+        }
+
+        if (statusCode == HttpStatusCode.Conflict ||
+            normalizedBody.Contains("duplicate", StringComparison.OrdinalIgnoreCase) ||
+            normalizedBody.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
+            normalizedBody.Contains("violates unique constraint", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Le nom du restaurant existe déjà. Merci d'en choisir un autre.";
+        }
+
+        return $"Erreur lors de l'ajout: {extractedMessage}";
     }
 
     public async Task<bool> UpdateRestaurantAsync(Restaurant restaurant, string? originalNom = null)
