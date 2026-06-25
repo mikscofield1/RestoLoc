@@ -12,6 +12,7 @@ public class SupabaseService
     private readonly string _url;
     private readonly string _key;
     private readonly HttpClient _httpClient;
+    public string? LastErrorMessage { get; private set; }
 
     public SupabaseService(IConfiguration configuration, HttpClient httpClient)
     {
@@ -132,6 +133,11 @@ public class SupabaseService
     {
         try
         {
+            LastErrorMessage = null;
+            var createdAt = restaurant.CreatedAt.HasValue
+                ? TruncateToMinute(restaurant.CreatedAt.Value.ToUniversalTime())
+                : TruncateToMinute(DateTime.UtcNow);
+
             var json = JsonSerializer.Serialize(new
             {
                 nom = restaurant.Nom,
@@ -145,7 +151,8 @@ public class SupabaseService
                 ville = string.IsNullOrWhiteSpace(restaurant.Ville) ? null : restaurant.Ville,
                 food = string.IsNullOrWhiteSpace(restaurant.Food) ? null : new[] { restaurant.Food },
                 rating = restaurant.Rating,
-                price_level = restaurant.PriceLevel
+                price_level = restaurant.PriceLevel,
+                created_at = createdAt
             });
 
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
@@ -159,13 +166,15 @@ public class SupabaseService
             if (!response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Erreur lors de l'ajout du restaurant: {response.StatusCode} {response.ReasonPhrase}");
-                Console.WriteLine(responseBody);
+                LastErrorMessage = $"Supabase {response.StatusCode} {response.ReasonPhrase}: {responseBody}";
+                Console.WriteLine("Supabase AddRestaurant payload: " + json);
+                Console.WriteLine($"Erreur lors de l'ajout du restaurant: {LastErrorMessage}");
             }
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
+            LastErrorMessage = ex.Message;
             Console.WriteLine($"Erreur lors de l'ajout du restaurant: {ex.Message}");
             return false;
         }
@@ -404,6 +413,12 @@ public class SupabaseService
     {
         request.Headers.Add("apikey", _key);
         request.Headers.Add("Authorization", $"Bearer {_key}");
+    }
+
+    private static DateTime TruncateToMinute(DateTime dateTime)
+    {
+        var utc = dateTime.Kind == DateTimeKind.Utc ? dateTime : dateTime.ToUniversalTime();
+        return new DateTime(utc.Year, utc.Month, utc.Day, utc.Hour, utc.Minute, 0, DateTimeKind.Utc);
     }
 
     private static string ParseJsonStringOrArray(JsonElement element)

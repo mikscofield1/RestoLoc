@@ -828,7 +828,7 @@
     private HashSet<int> SelectedRatings = new();
     private HashSet<int> SelectedPrices = new();
     private bool FilterShowFiable = true;
-    private bool FilterShowNonFiable = false;
+    private bool FilterShowNonFiable = true;
     private List<string> RestaurantTypeOptions = new();
     private List<string> VilleOptions = new();
     private string urlGoogleMaps = string.Empty;
@@ -913,14 +913,14 @@
                 .OrderBy(value => value)
                 .ToList();
 
-            FilteredRestaurants = ListeRestaurants.ToList();
-
             // Pré-charger les commentaires pour tous les restaurants
             foreach (var resto in ListeRestaurants)
             {
                 var comments = await SupabaseService.GetCommentsByRestaurantAsync(resto.Nom);
                 commentsCache[resto.Nom] = comments;
             }
+
+            ApplyFilter();
         }
         catch (Exception ex)
         {
@@ -1093,7 +1093,7 @@
         SelectedRatings.Clear();
         SelectedPrices.Clear();
         FilterShowFiable = true;
-        FilterShowNonFiable = false;
+        FilterShowNonFiable = true;
         sortBy = "rating";
         sortAscending = false;
         await ApplyFilterAsync();
@@ -1370,7 +1370,6 @@
         }
 
         nouveauResto.Type = TypeRestaurant.Physique;
-        nouveauResto.EstFiable = true;
         await PerformAddRestaurant(nouveauResto);
     }
 
@@ -1378,6 +1377,15 @@
     {
         try
         {
+            if (!restoToAdd.CreatedAt.HasValue)
+            {
+                restoToAdd.CreatedAt = TruncateToMinute(DateTime.UtcNow);
+            }
+            else
+            {
+                restoToAdd.CreatedAt = TruncateToMinute(restoToAdd.CreatedAt.Value);
+            }
+
             await RunWithLoading("Ajout du restaurant en cours…", async () =>
             {
                 var success = await SupabaseService.AddRestaurantAsync(restoToAdd);
@@ -1396,7 +1404,7 @@
                 }
                 else
                 {
-                    messageErreur = "Erreur lors de l'ajout du restaurant.";
+                    messageErreur = SupabaseService.LastErrorMessage ?? "Erreur lors de l'ajout du restaurant.";
                 }
             });
         }
@@ -1404,6 +1412,12 @@
         {
             messageErreur = $"Erreur: {ex.Message}";
         }
+    }
+
+    private static DateTime TruncateToMinute(DateTime dateTime)
+    {
+        var utc = dateTime.Kind == DateTimeKind.Utc ? dateTime : dateTime.ToUniversalTime();
+        return new DateTime(utc.Year, utc.Month, utc.Day, utc.Hour, utc.Minute, 0, DateTimeKind.Utc);
     }
 
     private async Task ShowTemporarySuccessMessage(string message)
@@ -1445,7 +1459,6 @@
                 nouveauResto.LienCommande = r.LienCommande;
 
             nouveauResto.Type = TypeRestaurant.Physique;
-            nouveauResto.EstFiable = true;
 
             // Réinitialiser les acceptations pour la prochaine extraction
             fieldAccepted = new() { { "ville", false } };
