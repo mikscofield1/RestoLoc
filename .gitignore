@@ -1,0 +1,60 @@
+# Build output
+bin/
+obj/
+**/bin/
+**/obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# Visual Studio
+.vs/
+
+# Rider
+.idea/
+*.sln.iml
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.backup
+*.bak
+*.swp
+
+# NuGet
+*.nupkg
+*.snupkg
+*.symbols.nupkg
+.nuget/
+
+# Microsoft Azure Web App publish settings
+*.Publish.xml
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+
+# Visual Studio database files
+*.mdf
+*.ldf
+
+# Others
+*.dbmdl
+*.dbproj.user
+
+# Output from build tools and package managers
+.vs/*
+node_modules/
+wwwroot/lib/
+
+# Ignore generated tool outputs
+tools/**/bin/
+tools/**/obj/
