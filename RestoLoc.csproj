@@ -11,4 +11,12 @@
     <PackageReference Include="supabase-csharp" Version="0.16.2" />
   </ItemGroup>
 
+  <!-- Exclure les outils/ scripts et projets utilitaires du build du projet principal -->
+  <ItemGroup>
+    <Compile Remove="tools\**\*.cs" />
+    <None Remove="tools\**\*.*" />
+    <Content Remove="tools\**\*.*" />
+    <EmbeddedResource Remove="tools\**\*.*" />
+  </ItemGroup>
+
 </Project>

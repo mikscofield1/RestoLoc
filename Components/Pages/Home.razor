@@ -127,14 +127,22 @@
                                             <div>
                                                 <span style="font-size: 0.9rem; color: #666;">Ville</span>
                                                 <strong style="display: block; margin-top: 4px; color: #004085;">@(string.IsNullOrEmpty(extractedAnalysis.Resto.Ville) ? "—" : extractedAnalysis.Resto.Ville)</strong>
+                                                @if (!string.IsNullOrEmpty(extractedAnalysis.SuggestedCity))
+                                                {
+                                                    <div style="font-size:0.85rem; color:#334155; margin-top:6px">Proposition : <em>@extractedAnalysis.SuggestedCity</em></div>
+                                                }
                                             </div>
                                             <div style="display: flex; gap: 6px;">
-                                                <button type="button" style="background-color: @(fieldAccepted.GetValueOrDefault("ville", false) ? "#28a745" : "#e9ecef"); color: @(fieldAccepted.GetValueOrDefault("ville", false) ? "white" : "#666"); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer;" @onclick='() => fieldAccepted["ville"] = true' title="Accepter la ville">
+                                                <button type="button" style="background-color: @(fieldAccepted.GetValueOrDefault("ville", false) ? "#28a745" : "#e9ecef"); color: @(fieldAccepted.GetValueOrDefault("ville", false) ? "white" : "#666"); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer;" @onclick="AcceptVille" title="Accepter la ville">
                                                     ✓
                                                 </button>
-                                                <button type="button" style="background-color: @(!fieldAccepted.GetValueOrDefault("ville", false) && extractedAnalysis.Resto.Ville != null ? "#e9ecef" : "#e9ecef"); color: #666; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer;" @onclick='() => fieldAccepted["ville"] = false' title="Refuser la ville">
+                                                <button type="button" style="background-color: @(!fieldAccepted.GetValueOrDefault("ville", false) && extractedAnalysis.Resto.Ville != null ? "#e9ecef" : "#e9ecef"); color: #666; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; cursor: pointer;" @onclick="RejectVille" title="Refuser la ville">
                                                     ✗
                                                 </button>
+                                                @if (!string.IsNullOrEmpty(extractedAnalysis.SuggestedCity))
+                                                {
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" @onclick='() => { extractedAnalysis.Resto.Ville = extractedAnalysis.SuggestedCity; fieldAccepted["ville"] = true; }'>Utiliser la proposition</button>
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -816,6 +824,40 @@
     </div>
 </div>
 
+@if (showCityConfirmationModal && extractedAnalysis != null)
+{
+    <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.45);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-primary">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Confirmation de la ville détectée</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CancelCityConfirmation" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Le lien Google Maps fourni a été analysé et une ville a été extraite.</p>
+                    <div class="mb-3 p-3" style="background-color: #f8f9fa; border-radius: 0.5rem;">
+                        <div><strong>Ville détectée :</strong> @(string.IsNullOrEmpty(extractedAnalysis.Resto.Ville) ? "—" : extractedAnalysis.Resto.Ville)</div>
+                        @if (!string.IsNullOrEmpty(extractedAnalysis.SuggestedCity))
+                        {
+                            <div class="mt-2"><strong>Suggestion :</strong> @extractedAnalysis.SuggestedCity</div>
+                        }
+                        <div class="mt-2"><strong>Restaurant :</strong> @(string.IsNullOrEmpty(extractedAnalysis.Resto.Nom) ? "—" : extractedAnalysis.Resto.Nom)</div>
+                    </div>
+                    <p>Tu peux accepter la ville détectée, utiliser la suggestion, ou modifier manuellement si elle n'est pas bonne.</p>
+                </div>
+                <div class="modal-footer flex-column align-items-stretch gap-2" style="padding: 1rem;">
+                    <button type="button" class="btn btn-success w-100" @onclick="AcceptCityAndAdd">Accepter cette ville et enregistrer</button>
+                    @if (!string.IsNullOrEmpty(extractedAnalysis.SuggestedCity))
+                    {
+                        <button type="button" class="btn btn-outline-primary w-100" @onclick="UseSuggestedCityAndAdd">Utiliser la proposition (@extractedAnalysis.SuggestedCity)</button>
+                    }
+                    <button type="button" class="btn btn-secondary w-100" @onclick="CancelCityConfirmation">Modifier la ville manuellement</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private string searchText = string.Empty;
     private string searchType = string.Empty;
@@ -838,6 +880,7 @@
     private Restaurant nouveauResto = new();
     private Calculs.GoogleMapsAnalysisResult? extractedAnalysis = null;
     private bool showAnalysisConfirmation = false;
+    private bool showCityConfirmationModal = false;
     private Dictionary<string, bool> fieldAccepted = new() { { "nom", false }, { "ville", false } };
     private Restaurant? restoEnEdition = null;
     private string? originalRestaurantNom = null;
@@ -1340,23 +1383,30 @@
         // Si l'utilisateur a collé une URL, on tente l'analyse automatique
         if (!string.IsNullOrWhiteSpace(urlGoogleMaps))
         {
-            urlGoogleMaps = await Calculs.ResolveGoogleMapsShortUrlAsync(Http, urlGoogleMaps);
-            extractedAnalysis = Calculs.AnalyserUrlGoogleMaps(urlGoogleMaps);
+            urlGoogleMaps = await Calculs.ResolveGoogleMapsShortUrlAsync(urlGoogleMaps);
+            extractedAnalysis = await Calculs.AnalyserUrlGoogleMapsAsync(urlGoogleMaps);
             if (extractedAnalysis == null)
             {
                 messageErreur = "Impossible d'analyser cette URL. Vérifiez qu'il s'agit d'un lien Google Maps valide.";
                 return;
             }
 
-            if (extractedAnalysis.IsConfident)
+            if (extractedAnalysis.NeedsConfirmation)
             {
-                // Ville trouvée => demander confirmation
+                // Il y a un doute : demander confirmation à l'utilisateur via la box de validation
                 showAnalysisConfirmation = true;
+                showCityConfirmationModal = false;
+                fieldAccepted = new() { { "nom", false }, { "ville", false } };
             }
             else
             {
-                // Pas de ville trouvée => ajouter directement
-                await ConfirmExtractedAndAdd();
+                // Aucun doute : appliquer automatiquement les valeurs extraites et ajouter
+                var r = extractedAnalysis.Resto;
+                if (!string.IsNullOrEmpty(r.Nom)) nouveauResto.Nom = r.Nom;
+                if (!string.IsNullOrEmpty(r.Ville)) nouveauResto.Ville = r.Ville;
+                if (!string.IsNullOrEmpty(r.LienCommande)) nouveauResto.LienCommande = r.LienCommande;
+                nouveauResto.Type = TypeRestaurant.Physique;
+                await PerformAddRestaurant(nouveauResto);
             }
             return;
         }
@@ -1471,6 +1521,49 @@
     {
         showAnalysisConfirmation = false;
         extractedAnalysis = null;
+        fieldAccepted = new() { { "ville", false } };
+    }
+
+    private void AcceptVille()
+    {
+        fieldAccepted["ville"] = true;
+    }
+
+    private void RejectVille()
+    {
+        fieldAccepted["ville"] = false;
+    }
+
+    private async Task AcceptCityAndAdd()
+    {
+        if (extractedAnalysis != null)
+        {
+            var r = extractedAnalysis.Resto;
+            if (!string.IsNullOrEmpty(r.Nom)) nouveauResto.Nom = r.Nom;
+            if (!string.IsNullOrEmpty(r.Ville)) nouveauResto.Ville = r.Ville;
+            if (!string.IsNullOrEmpty(r.LienCommande)) nouveauResto.LienCommande = r.LienCommande;
+            nouveauResto.Type = TypeRestaurant.Physique;
+
+            showCityConfirmationModal = false;
+            fieldAccepted = new() { { "ville", true } };
+            await PerformAddRestaurant(nouveauResto);
+        }
+    }
+
+    private async Task UseSuggestedCityAndAdd()
+    {
+        if (extractedAnalysis != null && !string.IsNullOrEmpty(extractedAnalysis.SuggestedCity))
+        {
+            extractedAnalysis.Resto.Ville = extractedAnalysis.SuggestedCity;
+            fieldAccepted["ville"] = true;
+            await AcceptCityAndAdd();
+        }
+    }
+
+    private void CancelCityConfirmation()
+    {
+        showCityConfirmationModal = false;
+        showAnalysisConfirmation = false;
         fieldAccepted = new() { { "ville", false } };
     }
 

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Avoid ProjectReference to the main web project to prevent recursive copy loops during build.
+         Reference the compiled assembly instead. Ensure RestoLoc is built first. -->
+    <Reference Include="RestoLoc">
+      <HintPath>..\..\bin\Debug\net10.0\RestoLoc.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
