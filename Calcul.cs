@@ -89,6 +89,18 @@ public static class Calculs
         public string? SuggestedCity { get; set; }
     }
 
+    public static bool EstNomVilleValide(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        var ville = value.Trim();
+        if (ville.Any(char.IsDigit))
+            return false;
+
+        return !string.IsNullOrWhiteSpace(ville);
+    }
+
     public static GoogleMapsAnalysisResult? AnalyserUrlGoogleMaps(string url)
     {
         if (string.IsNullOrWhiteSpace(url)) return null;
@@ -366,7 +378,8 @@ public static class Calculs
 
             if (string.IsNullOrWhiteSpace(city)) return (null, false);
 
-            return (city, confident);
+            city = NettoyerVilleGoogleMaps(city);
+            return string.IsNullOrWhiteSpace(city) ? (null, false) : (city, confident);
         }
         catch
         {
@@ -383,7 +396,7 @@ public static class Calculs
         var matchPlaceCity = regexPlaceCity.Match(decodedUrl);
         if (matchPlaceCity.Success && matchPlaceCity.Groups.Count > 1)
         {
-            return matchPlaceCity.Groups[1].Value.Replace("+", " ").Trim();
+            return NettoyerVilleGoogleMaps(matchPlaceCity.Groups[1].Value.Replace("+", " ").Trim()) ?? string.Empty;
         }
 
         // --- CAS 2 : Format Paramètre "query=" ou "q=" ---
@@ -391,7 +404,7 @@ public static class Calculs
         var matchQueryCity = regexQueryCity.Match(decodedUrl);
         if (matchQueryCity.Success && matchQueryCity.Groups.Count > 2)
         {
-            return matchQueryCity.Groups[2].Value.Replace("+", " ").Trim();
+            return NettoyerVilleGoogleMaps(matchQueryCity.Groups[2].Value.Replace("+", " ").Trim()) ?? string.Empty;
         }
 
         // --- CAS 3 : Format Itinéraire "/dir/.../Destination,+Ville" ---
@@ -399,7 +412,7 @@ public static class Calculs
         var matchDirCity = regexDirCity.Match(decodedUrl);
         if (matchDirCity.Success && matchDirCity.Groups.Count > 2)
         {
-            return matchDirCity.Groups[2].Value.Replace("+", " ").Trim();
+            return NettoyerVilleGoogleMaps(matchDirCity.Groups[2].Value.Replace("+", " ").Trim()) ?? string.Empty;
         }
 
         // --- CAS 4 : Fallback Query String avec virgules ---
@@ -413,12 +426,28 @@ public static class Calculs
                 if (p.Length >= 2)
                 {
                     // Si le dernier élément est un pays (ex: France), prendre l'avant-dernier pour la ville
-                    return p.Length > 2 ? p[p.Length - 2] : p.Last();
+                    var fallbackCity = p.Length > 2 ? p[p.Length - 2] : p.Last();
+                    return NettoyerVilleGoogleMaps(fallbackCity) ?? string.Empty;
                 }
             }
         }
 
         return string.Empty;
+    }
+
+    private static string? NettoyerVilleGoogleMaps(string? rawCity)
+    {
+        if (string.IsNullOrWhiteSpace(rawCity))
+            return null;
+
+        var ville = rawCity.Replace('+', ' ').Trim();
+        if (ville.Contains(","))
+        {
+            ville = ville.Split(',')[0].Trim();
+        }
+
+        ville = Regex.Replace(ville, @"\s+", " ").Trim();
+        return EstNomVilleValide(ville) ? ville : null;
     }
 
     private static string? ExtraireNomDepuisGoogleMapsUrl(string decodedUrl)

@@ -14,9 +14,13 @@
   <!-- Exclure les outils/ scripts et projets utilitaires du build du projet principal -->
   <ItemGroup>
     <Compile Remove="tools\**\*.cs" />
+    <Compile Remove="RestoLoc.Tests\**\*.cs" />
     <None Remove="tools\**\*.*" />
+    <None Remove="RestoLoc.Tests\**\*.*" />
     <Content Remove="tools\**\*.*" />
+    <Content Remove="RestoLoc.Tests\**\*.*" />
     <EmbeddedResource Remove="tools\**\*.*" />
+    <EmbeddedResource Remove="RestoLoc.Tests\**\*.*" />
   </ItemGroup>
 
 </Project>
